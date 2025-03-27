@@ -4,9 +4,10 @@ import select
 import sys
 
 # HOST = '127.0.0.1'
-PORT = 9999
+PORT = 9998
 
 def run_server():
+    # stores new connections to the server
     listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     listen_socket.bind(('', PORT))
