@@ -1,5 +1,6 @@
-from client import Client
 import argparse
+
+from client import Client
 
 def main():
     parser = argparse.ArgumentParser()
@@ -14,6 +15,7 @@ def main():
         client = Client(args.client)
     
     client.connect_to_server()
+    client.run_client()
     
 
 if __name__ == '__main__':
