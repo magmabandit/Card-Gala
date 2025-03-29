@@ -17,3 +17,7 @@ class LockedDict():
     def get(self, key):
         with self.lock:
             return self.dict[key]
+        
+    def get_dict(self):
+        with self.lock:
+            return self.dict

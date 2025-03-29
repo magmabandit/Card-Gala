@@ -4,15 +4,15 @@ from client import Client
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--client', '--c') # Requires str
+    parser.add_argument('--hostname', '--h') # Requires str
     args = parser.parse_args()
 
     client = None
 
-    if args.client == "" or None:
-        raise Exception("--c flag requires a hostname argument")
+    if args.hostname == "" or None:
+        raise Exception("--h flag requires a hostname argument")
     else:
-        client = Client(args.client)
+        client = Client(args.hostname)
     
     client.connect_to_server()
     client.run_client()
