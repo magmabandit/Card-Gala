@@ -12,6 +12,8 @@ class Client():
         self.state = {}
         self.username = ""
 
+        self.games = ["game"] #TODO: list of names of possible games
+
         self.ERROR = {"error": "error"}
 
         self.LOGIN = {

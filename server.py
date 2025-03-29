@@ -5,6 +5,7 @@ import threading
 from player import Player
 from locked_dict import LockedDict
 from locked_list import LockedList
+from game import Game
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4 #TODO: what should this value be?
@@ -20,7 +21,8 @@ class Server:
         self.login_cache = LockedDict()
         self.idle_players = LockedList()
 
-        self.registered_games = {}
+        self.registered_games = LockedDict()
+        self.registered_games.update("game", 0) #TODO: list of names of possible games
         self.waiting_games = {}
 
         self.player_threads = []
@@ -106,6 +108,7 @@ class Server:
         
         self.cast(player, state["commands"]["set username"] + player.get_username())
 
+        # TODO: start here
         print("Entering choose game state")
         state = self.CHOOSE_GAME
         self.call(player, state["commands"]["choose game"])
