@@ -20,6 +20,9 @@ class Server:
         self.login_cache = LockedDict()
         self.idle_players = LockedList()
 
+        self.registered_games = {}
+        self.waiting_games = {}
+
         self.player_threads = []
 
         self.ERROR = {"error": "error"}
@@ -29,6 +32,7 @@ class Server:
                 "login": "login",
                 "invalid login": "invlo",
                 "username used": "uused",
+                "set username": "suser",
             },
             "responses" : {
                 "login": {"newpl": self.new_player, "exist": self.existing_player, "error": self.login_error},
@@ -42,6 +46,7 @@ class Server:
             "responses" : {},
         }
 
+    #TODO: take input from stdin - if user types 'quit\n' the server cleans up and stops running
     def run_server(self):
         try:
             while True:
@@ -98,10 +103,12 @@ class Server:
             player.get_connection().close()
             self.idle_players.remove(player)
             return # If there is an error, kill the thread
+        
+        self.cast(player, state["commands"]["set username"] + player.get_username())
 
         print("Entering choose game state")
         state = self.CHOOSE_GAME
-        self.call(player, state["commands"]["choose game"]) #TODO - pass back username and password
+        self.call(player, state["commands"]["choose game"])
 
     # Expects reponse - blocking until response is recieved
     # If a player has disconnected the player will be removed

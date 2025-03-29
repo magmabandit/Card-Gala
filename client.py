@@ -10,6 +10,7 @@ class Client():
         self.hostname = hostname
         self.connection = None
         self.state = {}
+        self.username = ""
 
         self.ERROR = {"error": "error"}
 
@@ -17,6 +18,7 @@ class Client():
             "message": "login",
             "invalid login": "invlo",
             "username used": "uused",
+            "set username": "suser",
             "responses": {"enter_user_pass": self.login},
         }
 
@@ -50,6 +52,11 @@ class Client():
                         state = self.LOGIN
                         state["responses"]["enter_user_pass"]()
 
+                    elif message[0:5] == self.LOGIN["set username"]:
+                        self.username = message[5:]
+                        print(f"Welcome {self.username}!!")
+                        self.connection.sendall("ok".encode('utf-8'))
+                    
                     elif message == self.LOGIN["invalid login"]:
                         print("incorrect username or password, try again")
                         self.connection.sendall("ok".encode('utf-8'))

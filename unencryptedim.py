@@ -3,6 +3,9 @@ import socket
 import select
 import sys
 
+# Example from CS114
+# Written by Dan Votipka
+
 # HOST = '127.0.0.1'
 PORT = 9998
 
