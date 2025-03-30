@@ -20,3 +20,6 @@ class LockedList():
     def get(self, index):
         with self.lock:
             return self.list[index]
+        
+    def get_list(self):
+        return self.list

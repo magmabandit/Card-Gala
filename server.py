@@ -83,8 +83,6 @@ class Server:
             response = self.call(player, state["commands"]["login"])
             if response is None: # The client connection closed
                 print("Killing thread")
-                player.get_connection().close()
-                self.idle_players.remove(player)
                 return #kill the thread
             login_type = response[0:5]
             username = response[5:10]
