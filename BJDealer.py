@@ -12,7 +12,11 @@ class Dealer(Player):
         if self.hand.cards:
             return str(self.hand.cards[0]) + ", [Hidden Card]"
         return "[No Cards]"
-
+    
+    def Value_first_card(self):
+        if self.hand.cards:
+            return self.hand.cards[0].check_value()
+        
     def Play_turn(self, deck):
       
         while self.hand.get_value() < 17:

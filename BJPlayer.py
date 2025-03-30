@@ -3,7 +3,7 @@ from BJCard import Card
 class Player:
     def __init__(self):
         self.hand = Hand()
-        self.money = 1000
+        self.money = 0
         self.name = ""
     
     # create a player with a hand, money, and name
@@ -27,4 +27,7 @@ class Player:
     
     def add_money(self, money: int):
         self.money += money
+        
+    def clear_hand(self):
+        self.hand = Hand()
     

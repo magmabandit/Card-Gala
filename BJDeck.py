@@ -17,3 +17,5 @@ class Deck:
 
     def deal_card(self):
         return self.cards.pop()
+    def size(self):
+        return len(self.cards)
