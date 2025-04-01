@@ -6,9 +6,11 @@ from player import Player
 from locked_dict import LockedDict
 from locked_list import LockedList
 from game import Game
+from BJGame import BJGame
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4 #TODO: what should this value be?
+GAMES = {"blackjack": BJGame}
 
 class Server:
 
@@ -46,7 +48,9 @@ class Server:
                 "choose game": "cgame",
                 "availible games": "agame",
             },
-            "responses" : {},
+            "responses" : {
+                "choose game": {"egame": self.add_player_to_game, "ngame": self.create_new_game}
+            },
         }
 
     #TODO: take input from stdin - if user types 'quit\n' the server cleans up and stops running
@@ -109,11 +113,36 @@ class Server:
         self.cast(player, state["commands"]["set username"] + player.get_username())
 
         ### CHOOSE GAME ###
-        print("Entering choose game state")
         state = self.CHOOSE_GAME
-        self.call(player, state["commands"]["choose game"] + self.waiting_game_rooms.dict_to_string())
 
-        # response = self.call(player, state["commands"]["availible games"])
+        chosen_game = False
+        error = False
+        while not chosen_game:
+            print("Entering choose game state")
+            response = self.call(player, state["commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
+            if response is None: # The client connection closed
+                print("Killing thread")
+                return #kill the thread
+            
+            choose_game_type = response[0:5]
+            game = response[5:]
+            
+            responses = state["responses"]["choose game"]
+            if choose_game_type in responses:
+                chosen_game = responses[choose_game_type](player, game)
+            else:
+                chosen_game = responses["error"](choose_game_type, player)
+                error = True
+        
+        if error:
+            player.get_connection().close()
+            self.idle_players.remove(player)
+            return # If there is an error, kill the thread
+        
+        #TODO:
+        self.cast(player, state["commands"]["set username"] + player.get_username())
+            
+
 
     # Expects reponse - blocking until response is recieved
     # If a player has disconnected the player will be removed
@@ -190,3 +219,9 @@ class Server:
         return True
 
     ### CHOOSE_GAME STATE ###
+
+    def add_player_to_game(self, player, game):
+        return
+    
+    def create_new_game(self, player, game):
+        return

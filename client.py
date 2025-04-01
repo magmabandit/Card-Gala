@@ -30,6 +30,7 @@ class Client():
         self.CHOOSE_GAME = {
             "message": "cgame",
             "availible games": "agame",
+            "responses":{"choose_game": self.choose_game}
         }
 
     def connect_to_server(self):
@@ -79,18 +80,8 @@ class Client():
                     elif message[0:5] == self.CHOOSE_GAME["message"]:
                         print("Choose game!!")
                         self.state = self.CHOOSE_GAME
-                        # get the list of games from the remainder of the sent string
-                        # games are separated by commas
-                        # Client wants to know type of game, room name, num spots left, whos in the game
+                        self.state["responses"]["choose_game"](message[5:])               
 
-                        # Client chooses one of the availible games or chooses to create a new game 
-                        # from the list GAMES
-
-                        # Send response to server (if client choose an existing game
-                        # server needs to know which game it is)
-
-                        
-                    
                     # elif message == self.CHOOSE_GAME["availible games"]:
                     #     print("Choose game!!")
                     #     self.state = self.CHOOSE_GAME
@@ -142,6 +133,60 @@ class Client():
                 print(f"Invalid password {password}, password must must be 5 chars")
             else:
                 return password
+            
+    def choose_game(self, message):
+        room_names = []
+        # get the list of games from the remainder of the sent string
+        waiting_games_str = message
+
+        if waiting_games_str == "":
+            print("There are no games waiting to start -- create a new game")
+        else:
+            # Client wants to know type of game, room name, num spots left, whos in the game
+            # games are separated by '|' symbol, subcategories by commas
+            print("Choose from one of the following games or create a new game")
+            waiting_games = waiting_games_str.split("|")
+            num = 1
+            for game in waiting_games:
+                game_info = game.split(":")
+                room_names.append(game_info[0])
+                print(f"Game #{num}")
+                print(f"room name: {game_info[0]}")
+                print(f"game type: {game_info[1]}")
+                print(f"players: {game_info[2]}")
+                print(f"number of spots left: {game_info[3]}")
+                print()
+                num += 1
+
+        # Client chooses one of the availible games or chooses to create a new game 
+        # from the list GAMES
+        # Also sends response to server (if client choose an existing game
+        # server needs to know which game it is)
+        response = ""
+        entered_credentials = False
+        while not entered_credentials:
+            create_or_join = input("Do you want to create a new game or join an existing one? (c/j)")
+            if create_or_join == "c":
+                num_rooms = len(room_names)
+                chosen_game_num = self.select_valid_game_num(num_rooms)
+                response = "egame" + str(room_names[chosen_game_num - 1])
+                entered_credentials = True
+            elif create_or_join == "j":
+                game_type = input(f"Which of the following games do you want to play: {GAMES}")
+                response = "ngame" + game_type
+                entered_credentials = True
+            else:
+                print("Invalid input - try again (must enter c or j)")
+        self.connection.sendall(response.encode('utf-8'))
+
+    def select_valid_game_num(self, num_rooms):
+        selected_valid_num = False
+        while not selected_valid_num:
+            chosen_game_num = input("Choose a the number of the game that you would like to play")
+            if chosen_game_num > num_rooms:
+                print(f"The number you selected {chosen_game_num} is greater than the number of games {num_rooms}. Please try again.")
+            else:
+                return chosen_game_num
                 
 
 

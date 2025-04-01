@@ -32,6 +32,6 @@ class LockedDict():
                 room_name = game.get_room_name()
                 players = self.dict[game]
                 players_string = str(players)
-                num_spots_left = game.get_max_players() - len(players)
-                response += "|" + room_name + "," + game_type + "," + players_string + "," + num_spots_left
+                num_spots_left = str(game.get_max_players() - len(players))
+                response += "|" + room_name + ":" + game_type + ":" + players_string + ":" + num_spots_left
             return response
