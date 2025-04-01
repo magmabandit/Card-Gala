@@ -4,6 +4,9 @@ import sys
 
 PORT = 9998
 
+# List of possibe games to choose from
+GAMES = ["blackjack"]
+
 class Client():
 
     def __init__(self, hostname):
@@ -25,7 +28,8 @@ class Client():
         }
 
         self.CHOOSE_GAME = {
-            "message": "cgame"
+            "message": "cgame",
+            "availible games": "agame",
         }
 
     def connect_to_server(self):
@@ -51,8 +55,8 @@ class Client():
                 if message:
                     if message == self.LOGIN["message"]:
                         print("login message recieved")
-                        state = self.LOGIN
-                        state["responses"]["enter_user_pass"]()
+                        self.state = self.LOGIN
+                        self.state["responses"]["enter_user_pass"]()
 
                     elif message[0:5] == self.LOGIN["set username"]:
                         self.username = message[5:]
@@ -72,9 +76,25 @@ class Client():
                         sock.close()
                         exit(1)
 
-                    elif message == self.CHOOSE_GAME["message"]:
+                    elif message[0:5] == self.CHOOSE_GAME["message"]:
                         print("Choose game!!")
-                        state = self.CHOOSE_GAME
+                        self.state = self.CHOOSE_GAME
+                        # get the list of games from the remainder of the sent string
+                        # games are separated by commas
+                        # Client wants to know type of game, room name, num spots left, whos in the game
+
+                        # Client chooses one of the availible games or chooses to create a new game 
+                        # from the list GAMES
+
+                        # Send response to server (if client choose an existing game
+                        # server needs to know which game it is)
+
+                        
+                    
+                    # elif message == self.CHOOSE_GAME["availible games"]:
+                    #     print("Choose game!!")
+                    #     self.state = self.CHOOSE_GAME
+                    #     self.connection.sendall("ok".encode('utf-8'))
 
                     else:
                         print(f"Error: incorrect message {message} recieved")

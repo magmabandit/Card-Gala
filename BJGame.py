@@ -2,8 +2,11 @@ from BJDeck import Deck
 from BJPlayer import Player
 from BJDealer import Dealer
 
-class BJGame:
-    def __init__(self):
+from game import Game
+
+class BJGame(Game):
+    def __init__(self, players, room_name):
+        super().__init__(1, players, "blackjack", room_name)
         # Game Deck
         self.deck = Deck()
         # Player and Dealer
@@ -118,7 +121,7 @@ class BJGame:
             return False
     
 
-    def play(self):
+    def run(self):
         """Runs the game loop."""
 
         print("Welcome to Blackjack!")
@@ -139,6 +142,6 @@ class BJGame:
 
 
 # Run the game
-if __name__ == "__main__":
-    game = BJGame()
-    game.play()
+# if __name__ == "__main__":
+#     game = BJGame()
+#     game.play()

@@ -22,8 +22,8 @@ class Server:
         self.idle_players = LockedList()
 
         self.registered_games = LockedDict()
-        self.registered_games.update("game", 0) #TODO: list of names of possible games
-        self.waiting_games = {}
+        self.registered_games.update("blackjack", 0) #TODO: list of names of possible games
+        self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
 
@@ -44,6 +44,7 @@ class Server:
         self.CHOOSE_GAME = {
             "commands" : {
                 "choose game": "cgame",
+                "availible games": "agame",
             },
             "responses" : {},
         }
@@ -71,6 +72,7 @@ class Server:
                 thread.join()
     
     def host_player(self, player):
+        ### LOGIN ###
         state = self.LOGIN
 
         logged_in = False
@@ -106,10 +108,12 @@ class Server:
         
         self.cast(player, state["commands"]["set username"] + player.get_username())
 
-        # TODO: start here
+        ### CHOOSE GAME ###
         print("Entering choose game state")
         state = self.CHOOSE_GAME
-        self.call(player, state["commands"]["choose game"])
+        self.call(player, state["commands"]["choose game"] + self.waiting_game_rooms.dict_to_string())
+
+        # response = self.call(player, state["commands"]["availible games"])
 
     # Expects reponse - blocking until response is recieved
     # If a player has disconnected the player will be removed
