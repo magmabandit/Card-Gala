@@ -22,6 +22,17 @@ class LockedDict():
         with self.lock:
             return self.dict
         
+    # returns value if successful, -1 otherwise
+    def increment_if_less_equal_x(self, key, x):
+        with self.lock:
+            if self.dict[key] <= x:
+                self.dict[key] += 1
+                return self.dict[key]
+            else:
+                return -1
+            
+    ### waiting_games specific functions ###
+        
     # Should only be called by waiting_game_rooms
     # This function is only in this class because I want to use the lock for it
     def format_waiting_games_for_send(self):
@@ -30,8 +41,10 @@ class LockedDict():
             for game in self.dict.keys():
                 game_type = game.get_game_type()
                 room_name = game.get_room_name()
-                players = self.dict[game]
+                players = game.get_players()
+                players = list(map(lambda x: x.get_username(), players))
                 players_string = str(players)
                 num_spots_left = str(game.get_max_players() - len(players))
                 response += "|" + room_name + ":" + game_type + ":" + players_string + ":" + num_spots_left
             return response
+        

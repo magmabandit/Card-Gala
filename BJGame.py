@@ -6,7 +6,7 @@ from game import Game
 
 class BJGame(Game):
     def __init__(self, players, room_name):
-        super().__init__(1, players, "blackjack", room_name)
+        super().__init__(3, players, "blackjack", room_name)
         # Game Deck
         self.deck = Deck()
         # Player and Dealer

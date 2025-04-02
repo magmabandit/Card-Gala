@@ -5,6 +5,10 @@ class LockedList():
         self.list = []
         self.lock = threading.Lock()
 
+    def get_length(self):
+        with self.lock:
+            return len(self.list)
+
     def append(self, value):
         with self.lock:
             self.list.append(value)

@@ -1,6 +1,7 @@
 import socket
 import select
 import threading
+import sys
 
 from player import Player
 from locked_dict import LockedDict
@@ -11,6 +12,7 @@ from BJGame import BJGame
 PORT = 9998
 MAX_GAME_INSTANCES = 4 #TODO: what should this value be?
 GAMES = {"blackjack": BJGame}
+ERROR = "e"
 
 class Server:
 
@@ -46,14 +48,17 @@ class Server:
         self.CHOOSE_GAME = {
             "commands" : {
                 "choose game": "cgame",
-                "availible games": "agame",
+                "max_game_inst": "maxgm",
+                "room_filled": "froom",
             },
             "responses" : {
-                "choose game": {"egame": self.add_player_to_game, "ngame": self.create_new_game}
+                "choose game": {"egame": self.add_player_to_game, "ngame": self.create_new_game, "quitg": self.client_quit, "error": self.choose_game_error}
             },
         }
 
-    #TODO: take input from stdin - if user types 'quit\n' the server cleans up and stops running
+        self.END = {"end": "endgm"}
+
+    #TODO: clean cleanup with quit
     def run_server(self):
         try:
             while True:
@@ -71,16 +76,24 @@ class Server:
                 self.player_threads.append(player_thread)
                 player_thread.start()
                 print("new player started")
+
+                for t in self.player_threads:
+                    if not t.is_alive():
+                        t.join()
         finally:
             for thread in self.player_threads:
                 thread.join()
     
     def host_player(self, player):
-        ### LOGIN ###
+        if self.handle_login(player) == ERROR:
+            return
+        if self.handle_choose_game(player) == ERROR:
+            return 
+    
+    def handle_login(self, player):
         state = self.LOGIN
 
         logged_in = False
-        error = False
         while not logged_in:
             print("logging in!!")
             # Initiate the login sequence and get 
@@ -89,7 +102,7 @@ class Server:
             response = self.call(player, state["commands"]["login"])
             if response is None: # The client connection closed
                 print("Killing thread")
-                return #kill the thread
+                return ERROR #kill the thread
             login_type = response[0:5]
             username = response[5:10]
             password = response[10:15]
@@ -103,26 +116,20 @@ class Server:
                 logged_in = responses[login_type](player, username, password)
             else:
                 logged_in = responses["error"](login_type, player)
-                error = True
-        
-        if error:
-            player.get_connection().close()
-            self.idle_players.remove(player)
-            return # If there is an error, kill the thread
+                return ERROR # If there is an error, kill the thread
         
         self.cast(player, state["commands"]["set username"] + player.get_username())
-
-        ### CHOOSE GAME ###
+    
+    def handle_choose_game(self, player):
         state = self.CHOOSE_GAME
 
         chosen_game = False
-        error = False
         while not chosen_game:
             print("Entering choose game state")
             response = self.call(player, state["commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
             if response is None: # The client connection closed
                 print("Killing thread")
-                return #kill the thread
+                return ERROR #kill the thread
             
             choose_game_type = response[0:5]
             game = response[5:]
@@ -132,17 +139,7 @@ class Server:
                 chosen_game = responses[choose_game_type](player, game)
             else:
                 chosen_game = responses["error"](choose_game_type, player)
-                error = True
-        
-        if error:
-            player.get_connection().close()
-            self.idle_players.remove(player)
-            return # If there is an error, kill the thread
-        
-        #TODO:
-        self.cast(player, state["commands"]["set username"] + player.get_username())
-            
-
+                return ERROR 
 
     # Expects reponse - blocking until response is recieved
     # If a player has disconnected the player will be removed
@@ -164,7 +161,6 @@ class Server:
             print("Client disconnected")
             self.idle_players.remove(player)
             connection.close()
-                
 
     # Expects response 'ok'
     # Block until 'ok' response in order to enforce order of communication with client
@@ -220,8 +216,71 @@ class Server:
 
     ### CHOOSE_GAME STATE ###
 
-    def add_player_to_game(self, player, game):
-        return
+    def add_player_to_game(self, player, room_name):
+        # attempt to add player to game
+        game = None
+        for waiting_game in self.waiting_game_rooms.get_dict():
+            if waiting_game.get_room_name() == room_name:
+                game = waiting_game
+        if game == None:
+            print("Error")
+            return False
+        max_players = game.get_max_players()
+        # -1 means that we couldn't increment the value because we were already at max
+        if self.waiting_game_rooms.increment_if_less_equal_x(game, max_players) == -1:
+            self.cast(player, self.CHOOSE_GAME["commands"]["room_filled"])
+            return False
+        game.add_player(player)
+        
+        if game.get_max_players() == game.get_num_players():
+            # start game TODO
+            print("starting game")
+            # Do multiprocessing stuff
+            # Collect result of multiprocessing on game finish
+            # create and start new threads for all players to choose game again
+            # let this player choose new game
+        else:
+            return True
     
-    def create_new_game(self, player, game):
-        return
+    def create_new_game(self, player, game_type_str):
+        # attempt to create new game
+        # This increments the value of registered_games if doing so creates a valid num of game instances
+        # This is all done with the lock
+        val = self.registered_games.increment_if_less_equal_x(game_type_str, MAX_GAME_INSTANCES)
+        if val == -1:
+            self.cast(player, self.CHOOSE_GAME["commands"]["max_game_inst"])
+            return False
+        player_list = LockedList()
+        player_list.append(player)
+        new_game = GAMES[game_type_str](players=player_list, room_name= f"{game_type_str}{val}")
+        
+        if new_game.get_max_players() == 1:
+            # start game TODO
+            print("starting game")
+            # Do multiprocessing stuff
+            # Collect result of multiprocessing on game finish
+            # create and start new threads for all players to choose game again
+            # let this player choose new game
+        else:
+            # update waiting_game_rooms
+            self.waiting_game_rooms.update(new_game, 1)
+            return True
+        
+    def client_quit(self, player, game):
+        state = self.END
+        self.cast(player, state["end"])
+        self.idle_players.remove(player)
+        player.get_connection().close()
+        return True
+        
+    def choose_game_error(self, choose_game_type, new_player):
+        # If we don't get a valid response from the client 
+        # raise an error and terminate the connection
+
+        #TODO: for debugging - remove this
+        print(f"Choose game type: {choose_game_type}")
+
+        self.cast(new_player, self.ERROR["error"])
+        self.idle_players.remove(new_player)
+        new_player.get_connection().close()
+        return True
