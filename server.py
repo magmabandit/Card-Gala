@@ -131,8 +131,8 @@ class Server:
             response = self.call(player, state["commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
             if response is None: # The client connection closed
                 print("Killing thread")
-                return ERROR #kill the thread
-            # TODO: Invalid game type
+                return ERROR #kill the thread 
+            # TODO: Invalid game type 
             choose_game_type = response[0:5]
             game = response[5:]
             
