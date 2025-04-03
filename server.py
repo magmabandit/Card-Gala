@@ -132,7 +132,7 @@ class Server:
             if response is None: # The client connection closed
                 print("Killing thread")
                 return ERROR #kill the thread
-            
+            # TODO: Invalid game type
             choose_game_type = response[0:5]
             game = response[5:]
             

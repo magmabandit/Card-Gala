@@ -15,11 +15,12 @@ class BJGame(Game):
 
         self.BLACKJACK = {
             "commands" : {
-                "welcome": "welbj",
                 "enter money": "money",
-                "out of money": "nomon",
                 "place bet": "plbet",
-                "goodbye": "gdbye",
+                "intial hand": "ihand",
+                "printing": "print",
+                "Player-choice": "SxorH",
+                "Player-choice2": "YxorN"
             },
             "responses" : {
                 "example": {}
@@ -35,59 +36,56 @@ class BJGame(Game):
     def place_bet(self, server, state, player):
         """Handles betting before the round starts."""
        
-        bet = server.call(player, f"{state["commands"]["place bet"]}{self.player.Get_money()}")
+        bet = int(server.call(player, state["commands"]["place bet"] + str(self.player.Get_money())))
         self.player.Make_bet(bet)
         return bet
             
     
     # deals the initial cards to the player and the dealer: Keeps dealers
     # second card hidden
-    def deal_initial_cards(self):
+    def deal_initial_cards(self, server, state, player):
         """Deals two cards to the player and the dealer."""
         self.player.Hit(self.deck.deal_card())
         self.player.Hit(self.deck.deal_card())
         self.dealer.Hit(self.deck.deal_card())
         self.dealer.Hit(self.deck.deal_card())
 
-        print("\nYour Hand:", self.player.Show_hand())
-        print("Hand Value:", self.player.Get_hand().get_value())
-        print("Dealer's First Card:", self.dealer.Show_first_card())
-        print("Dealer's Hand Value:", self.dealer.Value_first_card())
-        print("It is your turn.")
+        server.cast(player, state["commands"]["intial hand"] + self.player.Show_hand() + "," + str(self.player.Get_hand().get_value())
+                    + "," + self.dealer.Show_first_card() + "," + str(self.dealer.Value_first_card()) )
 
-    def player_turn(self):
+    def player_turn(self, server, state, player):
         """Handles the player's hitting or standing."""
 
         while True:
-            print("\nYour Hand:", self.player.Show_hand())
-            print("Hand Value:", self.player.Get_hand().get_value())
+            server.cast(player, state["commands"]["printing"] + "\nYour Hand: " + self.player.Show_hand())
+            server.cast(player, state["commands"]["printing"] + "\nHand Value: " + str(self.player.Get_hand().get_value()))
 
+        
             if self.player.Get_hand().get_value() > 21:
-                print("You busted!")
+                server.cast(player, state["commands"]["printing"] + "You busted")
                 return False
-
-            move = input("Do you want to (H)it or (S)tand? ").lower()
+            move = server.call(player, state["commands"]["Player-choice"])
             if move == "h":
                 self.player.Hit(self.deck.deal_card())
             elif move == "s":
                 break
             else:
-                print("Invalid choice. Enter H to hit or S to stand.")
+                server.cast(player, state["commands"]["printing"] + 
+                            "Invalid choice. Enter H to hit or S to stand.")
 
         return True
 
-    def dealer_turn(self):
+    def dealer_turn(self, server, state, player):
         """Dealer plays according to the rules (hit until 17+)."""
-
-        print("\nDealer's Turn...")
-        print("Dealer's Hand:", self.dealer.Show_hand())
+        server.cast(player, state["commands"]["printing"] + "\nDealer's Turn...")
+        server.cast(player, state["commands"]["printing"] + self.dealer.Show_hand())
 
         self.dealer.Play_turn(self.deck)
 
-        print("Dealer's Final Hand:", self.dealer.Show_hand())
-        print("Dealer's Hand Value:", self.dealer.Get_hand().get_value())
+        server.cast(player, state["commands"]["printing"] + self.dealer.Show_hand())
+        server.cast(player, state["commands"]["printing"] + str(self.dealer.Get_hand().get_value()))
     
-    def determine_winner(self, bet):
+    def determine_winner(self, bet, server, state, player):
         """Compares hands and determines who wins the round."""
 
         player_value = self.player.Get_hand().get_value()
@@ -95,37 +93,37 @@ class BJGame(Game):
 
 
         if dealer_value > 21 or player_value > dealer_value:
-            print("You win!")
+            server.cast(player, state["commands"]["printing"] + "You win!")
             self.player.add_money(bet * 1.5)
 
         elif player_value == dealer_value:
-            print("It's a tie! You get your money back.")
+            server.cast(player, state["commands"]["printing"] + "It's a tie! You get your money back.")
             self.player.add_money(bet)  
         else:
-            print("Dealer wins!")
+            server.cast(player, state["commands"]["printing"] + "Dealer wins!")
 
     def play_round(self, server, state, player):
         """Runs a full round of Blackjack."""
 
         if self.player.Get_money() <= 0:
-            server.cast(player, state["commands"]["out of money"])
+            server.cast(player, state["commands"]["printing"] + "You're out of money! Game over :(.")
             return False
         
         self.deck.shuffle()
         bet = self.place_bet(server, state, player)
-        self.deal_initial_cards()
+        self.deal_initial_cards(server, state, player) #TODO
 
-        if self.player_turn():
-            self.dealer_turn()
-            self.determine_winner(bet)
+        if self.player_turn(server, state, player):
+            self.dealer_turn(server, state, player)
+            self.determine_winner(bet, server, state, player)
 
-        print(f"\nYour Money: ${self.player.Get_money()}")
-        Game_check = input("\nPlay again? (Y/N): ").lower() == "y"
-        if Game_check:
+        server.cast(player, state["commands"]["printing"] + "Ammount of money left: " + str(self.player.Get_money()))
+        Game_check = server.call(player, state["commands"]["Player-choice2"])
+        if Game_check == "y":
             self.player.clear_hand()
             self.dealer.clear_hand()
             self.new_deck()
-            self.play_round()
+            self.play_round(server, state, player)
         else:
             return False
     
@@ -135,19 +133,19 @@ class BJGame(Game):
         state = self.BLACKJACK
         pl1 = players[0]
 
-        # send welcome message
-        server.cast(pl1, state["commands"]["welcome"])
+        # send welcome message(cast printing)
+        server.cast(pl1, state["commands"]["printing"] + "Welcome to blackjack, " + pl1.get_username() + "!!")
         
         name = pl1.get_username()
         self.player.Make_name(name)
 
+        # call(needs something to return)
         money = server.call(pl1, state["commands"]["enter money"])
         self.player.add_money(int(money))
 
         self.play_round(server, state, pl1)
-        server.cast(pl1, state["commands"]["goodbye"])
-
-
+        server.cast(pl1, state["commands"]["printing"] + "Thanks for playing Blackjack! Goodbye!!")
+        
 # Run the game
 # if __name__ == "__main__":
 #     game = BJGame()

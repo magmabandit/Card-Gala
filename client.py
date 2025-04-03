@@ -36,11 +36,12 @@ class Client():
         }
 
         self.BLACKJACK = {
-            "welcome": "welbj",
             "enter money": "money",
-            "out of money": "nomon",
             "place bet": "plbet",
-            "goodbye": "gdbye",
+            "intial hand": "ihand",
+            "printing": "print",
+            "Player-choice": "SxorH",
+            "Player-choice2": "YxorN",
             "responses":{"enter money": self.enter_money, "place bet": self.place_bet}
         }
 
@@ -104,8 +105,8 @@ class Client():
                     
                     ### Blackjack specific stuff ###
                     
-                    elif message == self.BLACKJACK["welcome"]:
-                        print(f"Welcome to blackjack {self.username}!!")
+                    elif message[0:5] == self.BLACKJACK["printing"]:
+                        print(message[5:])
                         self.state = self.BLACKJACK
                         self.connection.sendall("ok".encode('utf-8')) 
                     
@@ -114,13 +115,24 @@ class Client():
                     
                     elif message[0:5] == self.BLACKJACK["place bet"]:
                         self.state["responses"]["place bet"](message[5:])
-                    
-                    elif message == self.BLACKJACK["out of money"]:
-                        print("You're out of money! Game over. 😢")
-                        self.connection.sendall("ok".encode('utf-8')) 
 
-                    elif message == self.BLACKJACK["goodbye"]:
-                        print(f"Thanks for playing Blackjack! Goodbye!!")
+                    elif message[0:5] == self.BLACKJACK["Player-choice"]:
+                        move = input("Do you want to (H)it or (S)tand? ").lower()
+                        self.connection.sendall(move.encode('utf-8')) 
+                    
+                    elif message[0:5] == self.BLACKJACK["Player-choice2"]:
+                        game_check = input("Play again? (Y/N): ").lower()
+                        self.connection.sendall(game_check.encode('utf-8')) 
+
+                    elif message[0:5] == self.BLACKJACK["intial hand"]:
+                        hand = message[5:]
+                        hand_msgs = hand.split(",")
+                        print(f"\nYour Hand: {hand_msgs[0]}")
+                        print(f"Hand Value: {hand_msgs[1]}")
+                        print(f"Dealer's First Card: {hand_msgs[2]}")
+                        print(f"Dealer's Hand Value: {hand_msgs[3]}")
+                        print("It is your turn")
+
                         self.connection.sendall("ok".encode('utf-8')) 
                     
                     ###########################################################
@@ -266,8 +278,8 @@ class Client():
         print(f"You have ${money}")
         placed_bet = False
         while not placed_bet:
-            bet = int(input("Enter your bet: "))
-            if bet.isdigit() and int(bet) > 0 and int(bet) <= money:
+            bet = input("Enter your bet: ")
+            if bet.isdigit() and int(bet) > 0 and int(bet) <= int(money):
                 self.connection.sendall(bet.encode('utf-8'))
                 placed_bet = True                
             else:
