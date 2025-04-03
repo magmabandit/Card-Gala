@@ -2,6 +2,7 @@ import socket
 import select
 import threading
 import sys
+from multiprocessing import Process
 
 from player import Player
 from locked_dict import LockedDict
@@ -50,6 +51,7 @@ class Server:
                 "choose game": "cgame",
                 "max_game_inst": "maxgm",
                 "room_filled": "froom",
+                "waiting for players": "wplay", 
             },
             "responses" : {
                 "choose game": {"egame": self.add_player_to_game, "ngame": self.create_new_game, "quitg": self.client_quit, "error": self.choose_game_error}
@@ -233,13 +235,36 @@ class Server:
         game.add_player(player)
         
         if game.get_max_players() == game.get_num_players():
-            # start game TODO
+            # start game
             print("starting game")
-            # Do multiprocessing stuff
+            self.waiting_game_rooms.remove(game)
+            for pl in game.get_players():
+                self.idle_players.remove(pl) 
+            p = Process(target=game.run, args=[self, game.get_players()])
+            p.start()
+
             # Collect result of multiprocessing on game finish
-            # create and start new threads for all players to choose game again
+            p.join()
+
+            # Clean up game
+            old_game_players = game.get_players()
+            self.registered_games.decrement(game.get_game_type())
+            for pl in old_game_players:
+                self.idle_players.append(pl) 
+
+                # create and start new threads for all players to choose game again
+                if pl != player:
+                    print("Starting new player")
+                    player_thread = threading.Thread(target=self.handle_choose_game, args=[pl])
+                    print("new player thread created")
+                    self.player_threads.append(player_thread)
+                    player_thread.start()
+                    print("new player started")
+
             # let this player choose new game
+            self.handle_choose_game(player)
         else:
+            self.cast(player, self.CHOOSE_GAME["commands"]["waiting for players"])
             return True
     
     def create_new_game(self, player, game_type_str):
@@ -255,15 +280,37 @@ class Server:
         new_game = GAMES[game_type_str](players=player_list, room_name= f"{game_type_str}{val}")
         
         if new_game.get_max_players() == 1:
-            # start game TODO
+            # start game
             print("starting game")
-            # Do multiprocessing stuff
+            for pl in new_game.get_players():
+                self.idle_players.remove(pl) 
+            p = Process(target=new_game.run, args=[self, new_game.get_players()])
+            p.start()
+
             # Collect result of multiprocessing on game finish
-            # create and start new threads for all players to choose game again
+            p.join()
+
+            # Clean up game
+            old_game_players = new_game.get_players()
+            self.registered_games.decrement(new_game.get_game_type())
+            for pl in old_game_players:
+                self.idle_players.append(pl) 
+
+                # create and start new threads for all players to choose game again
+                if pl != player:
+                    print("Starting new player")
+                    player_thread = threading.Thread(target=self.handle_choose_game, args=[pl])
+                    print("new player thread created")
+                    self.player_threads.append(player_thread)
+                    player_thread.start()
+                    print("new player started")
+
             # let this player choose new game
+            self.handle_choose_game(player)
         else:
             # update waiting_game_rooms
             self.waiting_game_rooms.update(new_game, 1)
+            self.cast(player, self.CHOOSE_GAME["commands"]["waiting for players"])
             return True
         
     def client_quit(self, player, game):

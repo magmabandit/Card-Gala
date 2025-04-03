@@ -30,6 +30,10 @@ class LockedDict():
                 return self.dict[key]
             else:
                 return -1
+    
+    def decrement(self, key):
+        with self.lock:
+            self.dict[key] -= 1
             
     ### waiting_games specific functions ###
         

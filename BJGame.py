@@ -6,12 +6,25 @@ from game import Game
 
 class BJGame(Game):
     def __init__(self, players, room_name):
-        super().__init__(3, players, "blackjack", room_name)
+        super().__init__(1, players, "blackjack", room_name)
         # Game Deck
         self.deck = Deck()
         # Player and Dealer
         self.player = Player()
         self.dealer = Dealer()
+
+        self.BLACKJACK = {
+            "commands" : {
+                "welcome": "welbj",
+                "enter money": "money",
+                "out of money": "nomon",
+                "place bet": "plbet",
+                "goodbye": "gdbye",
+            },
+            "responses" : {
+                "example": {}
+            },
+        }
      
     # Method to create a new deck if the current deck is running low
     def new_deck(self):
@@ -19,17 +32,13 @@ class BJGame(Game):
             self.deck = Deck()
             self.deck.shuffle()
     # asks the player to place a bet
-    def place_bet(self):
+    def place_bet(self, server, state, player):
         """Handles betting before the round starts."""
        
-        while True: 
-            print(f"You have ${self.player.Get_money()} ")
-            bet = int(input("Enter your bet: "))
-            if bet > 0 and bet <= self.player.Get_money():
-                self.player.Make_bet(bet)
-                return bet
-            else:
-                print("Invalid bet! You must bet within your available money.")
+        bet = server.call(player, f"{state["commands"]["place bet"]}{self.player.Get_money()}")
+        self.player.Make_bet(bet)
+        return bet
+            
     
     # deals the initial cards to the player and the dealer: Keeps dealers
     # second card hidden
@@ -95,15 +104,15 @@ class BJGame(Game):
         else:
             print("Dealer wins!")
 
-    def play_round(self):
+    def play_round(self, server, state, player):
         """Runs a full round of Blackjack."""
 
         if self.player.Get_money() <= 0:
-            print("You're out of money! Game over. 😢")
+            server.cast(player, state["commands"]["out of money"])
             return False
         
         self.deck.shuffle()
-        bet = self.place_bet()
+        bet = self.place_bet(server, state, player)
         self.deal_initial_cards()
 
         if self.player_turn():
@@ -121,24 +130,22 @@ class BJGame(Game):
             return False
     
 
-    def run(self):
+    def run(self, server, players):
         """Runs the game loop."""
+        state = self.BLACKJACK
+        pl1 = players[0]
 
-        print("Welcome to Blackjack!")
-        name = input("Enter your name: ")
+        # send welcome message
+        server.cast(pl1, state["commands"]["welcome"])
+        
+        name = pl1.get_username()
         self.player.Make_name(name)
-        print(f"Welcome to Blackjack, {self.player.name}!")
 
-        Value = input("Enter the amount of money you want to start with: ")
-        if Value.isdigit() and int(Value) > 0:
-            self.player.add_money(int(Value))
-        else:
-            print("You did not enter a valid amount of Money. Come "
-            "back when you have actual money.")
-            return 1
+        money = server.call(pl1, state["commands"]["enter money"])
+        self.player.add_money(int(money))
 
-        self.play_round()
-        print("Thanks for playing Blackjack!")
+        self.play_round(server, state, pl1)
+        server.cast(pl1, state["commands"]["goodbye"])
 
 
 # Run the game

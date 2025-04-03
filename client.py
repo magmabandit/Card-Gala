@@ -31,7 +31,17 @@ class Client():
             "message": "cgame",
             "max_game_inst": "maxgm",
             "room_filled": "froom",
+            "waiting for players": "wplay", 
             "responses":{"choose_game": self.choose_game}
+        }
+
+        self.BLACKJACK = {
+            "welcome": "welbj",
+            "enter money": "money",
+            "out of money": "nomon",
+            "place bet": "plbet",
+            "goodbye": "gdbye",
+            "responses":{"enter money": self.enter_money, "place bet": self.place_bet}
         }
 
         self.END = {"end": "endgm"}
@@ -87,6 +97,33 @@ class Client():
                     elif message == self.CHOOSE_GAME["room_filled"]:
                         print("The room filled up before you got in. Please try again.")
                         self.connection.sendall("ok".encode('utf-8'))  
+
+                    elif message == self.CHOOSE_GAME["waiting for players"]:
+                        print("Waiting for players to join the game...")
+                        self.connection.sendall("ok".encode('utf-8')) 
+                    
+                    ### Blackjack specific stuff ###
+                    
+                    elif message == self.BLACKJACK["welcome"]:
+                        print(f"Welcome to blackjack {self.username}!!")
+                        self.state = self.BLACKJACK
+                        self.connection.sendall("ok".encode('utf-8')) 
+                    
+                    elif message == self.BLACKJACK["enter money"]:
+                        self.state["responses"]["enter money"]()
+                    
+                    elif message[0:5] == self.BLACKJACK["place bet"]:
+                        self.state["responses"]["place bet"](message[5:])
+                    
+                    elif message == self.BLACKJACK["out of money"]:
+                        print("You're out of money! Game over. 😢")
+                        self.connection.sendall("ok".encode('utf-8')) 
+
+                    elif message == self.BLACKJACK["goodbye"]:
+                        print(f"Thanks for playing Blackjack! Goodbye!!")
+                        self.connection.sendall("ok".encode('utf-8')) 
+                    
+                    ###########################################################
 
                     elif message == self.END["end"]:
                         print("Thank you for playing CARD-GALA, goodbye!")
@@ -212,6 +249,33 @@ class Client():
                 print(f"The number you selected {chosen_game_num} is greater than the number of games {num_rooms}. Please try again.")
             else:
                 return chosen_game_num
+            
+    ### Blackjack functions ###
+    def enter_money(self):
+        entered_money = False
+        while not entered_money:
+            value = input("Enter the amount of money you want to start with: ")
+            if value.isdigit() and int(value) > 0:
+                self.connection.sendall(value.encode('utf-8'))
+                entered_money = True
+            else:
+                print("You did not enter a valid amount of Money. Come "
+                "back when you have actual money.")
+    
+    def place_bet(self, money):
+        print(f"You have ${money}")
+        placed_bet = False
+        while not placed_bet:
+            bet = int(input("Enter your bet: "))
+            if bet.isdigit() and int(bet) > 0 and int(bet) <= money:
+                self.connection.sendall(bet.encode('utf-8'))
+                placed_bet = True                
+            else:
+                print("You did not enter a valid bet. Bet must be > $0 and within your available money")
+
+
+
+
                 
 
 
