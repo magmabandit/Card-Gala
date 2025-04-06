@@ -4,7 +4,7 @@ from client import Client
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--hostname', '--h') # Requires str
+    parser.add_argument('--hostname', '--h')
     args = parser.parse_args()
 
     client = None

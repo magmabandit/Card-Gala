@@ -1,6 +1,5 @@
 import socket
 import select
-import sys
 
 from states import States
 
@@ -72,6 +71,10 @@ class Client():
                     elif message == States.CHOOSE_GAME["server commands"]["waiting for players"]:
                         print("Waiting for players to join the game...")
                         self.connection.sendall("ok".encode('utf-8')) 
+
+                    elif message[0:5] == States.CHOOSE_GAME["server commands"]["printing"]:
+                        print(message[5:])
+                        self.connection.sendall("ok".encode('utf-8')) 
                     
                     ### Blackjack specific stuff ###
                     
@@ -133,36 +136,18 @@ class Client():
         while not entered_credentials:
             returning_user = input("Are you a returning user (y/n)? ")
             if returning_user == "y":
-                username = self.get_valid_username()
-                password = self.get_valid_password()
-                response = "exist" + username + password
+                username = input("Enter your username: ")
+                password = input("Enter your password: ")
+                response = "exist" + username + "," + password
                 entered_credentials = True
             elif returning_user == "n":
-                username = self.get_valid_username()
-                password = self.get_valid_password()
-                response = "newpl" + username + password
+                username = input("Enter new username: ")
+                password = input("Enter new password: ")
+                response = "newpl" + username + "," + password
                 entered_credentials = True
             else:
                 print("Invalid input - try again (must enter y or n)")
         self.connection.sendall(response.encode('utf-8'))
-    
-    def get_valid_username(self):
-        valid_username = False
-        while not valid_username:
-            username = input("Enter your username: ")
-            if len(username) != 5:
-                print(f"Invalid username {username}, username must must be 5 chars")
-            else:
-                return username
-            
-    def get_valid_password(self):
-        valid_password = False
-        while not valid_password:
-            password = input("Enter your password: ")
-            if len(password) != 5:
-                print(f"Invalid password {password}, password must must be 5 chars")
-            else:
-                return password
             
     def choose_game(self, message):
         room_names = []
