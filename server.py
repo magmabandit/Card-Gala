@@ -1,7 +1,6 @@
 import socket
 import select
 import threading
-import sys
 from multiprocessing import Process
 
 from player import Player
@@ -12,7 +11,7 @@ from game import Game
 from BJGame import BJGame
 
 PORT = 9998
-MAX_GAME_INSTANCES = 4 #TODO: what should this value be?
+MAX_GAME_INSTANCES = 4
 GAMES = {"blackjack": BJGame}
 ERROR = "e"
 
@@ -22,7 +21,7 @@ class Server:
         self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.listen_socket.bind(('', PORT))
-        self.listen_socket.listen(100) # TODO: do we need to pass a larger arg to this function so we can accept multiple connections at the same time?
+        self.listen_socket.listen(100)
 
         self.login_cache = LockedDict()
         self.idle_players = LockedList()
@@ -73,19 +72,21 @@ class Server:
             print("logging in!!")
             # Initiate the login sequence and get 
             # returning/exisiting user, username, password from client
-            # TODO: usernames & passwords must currently be 5 chars - is that ok?
             response = self.call(player, state["server commands"]["login"])
             if response is None: # The client connection closed
                 print("Killing thread")
                 return ERROR #kill the thread
             login_type = response[0:5]
-            username = response[5:10]
-            password = response[10:15]
+            user_pass = response[5:].split(",")
+            print(f"user_pass: {user_pass}")
+            username = user_pass[0]
+            print(f"username: {username}")
+            password = user_pass[1]
+            print(f"password: {password}")
 
             print(f"login type: {login_type}, username: {username}, password: {password}")
 
             # Log player in
-            #TODO: is it ok for multiple computers to log into the same account?
             responses = state["client responses"]["login"]
             if login_type in responses:
                 if login_type == "newpl":
@@ -108,7 +109,6 @@ class Server:
             if response is None: # The client connection closed
                 print("Killing thread")
                 return ERROR #kill the thread 
-            # TODO: Invalid game type 
             choose_game_type = response[0:5]
             game = response[5:]
             
@@ -206,7 +206,8 @@ class Server:
             if waiting_game.get_room_name() == room_name:
                 game = waiting_game
         if game == None:
-            print("Error")
+            self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] +
+                              "You didn't enter a valid game room name, try again")
             return False
         max_players = game.get_max_players()
         # -1 means that we couldn't increment the value because we were already at max
@@ -252,6 +253,11 @@ class Server:
         # attempt to create new game
         # This increments the value of registered_games if doing so creates a valid num of game instances
         # This is all done with the lock
+        if game_type_str not in GAMES.keys():
+            self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] +
+                              "You didn't enter a valid game type, try again")
+            return False
+
         val = self.registered_games.increment_if_less_equal_x(game_type_str, MAX_GAME_INSTANCES)
         if val == -1:
             self.cast(player, States.CHOOSE_GAME["server commands"]["max_game_inst"])

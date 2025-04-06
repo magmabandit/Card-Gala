@@ -7,6 +7,7 @@ class States():
         "client responses": {}
     }
 
+    #TODO: add printing
     LOGIN = {
         "server commands": {
             "login": "login",
@@ -19,12 +20,14 @@ class States():
         }
     }
 
+    #TODO: add printing - update other server commands
     CHOOSE_GAME = {
         "server commands": {
             "choose game": "cgame",
             "max_game_inst": "maxgm",
             "room_filled": "froom",
             "waiting for players": "wplay",
+            "printing": "print",
         },
         "client responses": {
             "choose game": ["egame", "ngame", "quitg"]
