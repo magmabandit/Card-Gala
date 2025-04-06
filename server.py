@@ -7,6 +7,7 @@ from multiprocessing import Process
 from player import Player
 from locked_dict import LockedDict
 from locked_list import LockedList
+from states import States
 from game import Game
 from BJGame import BJGame
 
@@ -31,34 +32,6 @@ class Server:
         self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
-
-        self.ERROR = {"error": "error"}
-        
-        self.LOGIN = {
-            "commands" : {
-                "login": "login",
-                "invalid login": "invlo",
-                "username used": "uused",
-                "set username": "suser",
-            },
-            "responses" : {
-                "login": {"newpl": self.new_player, "exist": self.existing_player, "error": self.login_error},
-            },
-        }
-
-        self.CHOOSE_GAME = {
-            "commands" : {
-                "choose game": "cgame",
-                "max_game_inst": "maxgm",
-                "room_filled": "froom",
-                "waiting for players": "wplay", 
-            },
-            "responses" : {
-                "choose game": {"egame": self.add_player_to_game, "ngame": self.create_new_game, "quitg": self.client_quit, "error": self.choose_game_error}
-            },
-        }
-
-        self.END = {"end": "endgm"}
 
     #TODO: clean cleanup with quit
     def run_server(self):
@@ -93,7 +66,7 @@ class Server:
             return 
     
     def handle_login(self, player):
-        state = self.LOGIN
+        state = States.LOGIN
 
         logged_in = False
         while not logged_in:
@@ -101,7 +74,7 @@ class Server:
             # Initiate the login sequence and get 
             # returning/exisiting user, username, password from client
             # TODO: usernames & passwords must currently be 5 chars - is that ok?
-            response = self.call(player, state["commands"]["login"])
+            response = self.call(player, state["server commands"]["login"])
             if response is None: # The client connection closed
                 print("Killing thread")
                 return ERROR #kill the thread
@@ -113,22 +86,25 @@ class Server:
 
             # Log player in
             #TODO: is it ok for multiple computers to log into the same account?
-            responses = state["responses"]["login"]
+            responses = state["client responses"]["login"]
             if login_type in responses:
-                logged_in = responses[login_type](player, username, password)
+                if login_type == "newpl":
+                    logged_in = self.new_player(player, username, password)
+                else:
+                    logged_in = self.existing_player(player, username, password)
             else:
-                logged_in = responses["error"](login_type, player)
+                logged_in = self.login_error(login_type, player)
                 return ERROR # If there is an error, kill the thread
         
-        self.cast(player, state["commands"]["set username"] + player.get_username())
+        self.cast(player, state["server commands"]["set username"] + player.get_username())
     
     def handle_choose_game(self, player):
-        state = self.CHOOSE_GAME
+        state = States.CHOOSE_GAME
 
         chosen_game = False
         while not chosen_game:
             print("Entering choose game state")
-            response = self.call(player, state["commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
+            response = self.call(player, state["server commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
             if response is None: # The client connection closed
                 print("Killing thread")
                 return ERROR #kill the thread 
@@ -136,11 +112,16 @@ class Server:
             choose_game_type = response[0:5]
             game = response[5:]
             
-            responses = state["responses"]["choose game"]
+            responses = state["client responses"]["choose game"]
             if choose_game_type in responses:
-                chosen_game = responses[choose_game_type](player, game)
+                if choose_game_type == "egame":
+                    chosen_game = self.add_player_to_game(player, game)
+                elif choose_game_type == "ngame":
+                    chosen_game = self.create_new_game(player, game)
+                else:
+                    chosen_game = self.client_quit(player, game)
             else:
-                chosen_game = responses["error"](choose_game_type, player)
+                chosen_game = self.choose_game_error(choose_game_type, player)
                 return ERROR 
 
     # Expects reponse - blocking until response is recieved
@@ -178,7 +159,7 @@ class Server:
         if data != b'': # Recieved response from client
             response = data.decode('utf-8')
             if response != "ok":
-                connection.sendall(self.ERROR["error"])
+                connection.sendall(States.ERROR["error"])
                 self.idle_players.remove(player)
                 connection.close()
         else: # Client has disconnected
@@ -189,20 +170,20 @@ class Server:
     ### LOGIN STATE ###
     def new_player(self, new_player, username, password):
         if username in self.login_cache.get_dict():
-            self.cast(new_player, self.LOGIN["commands"]["username used"])
+            self.cast(new_player, States.LOGIN["server commands"]["username used"])
             return False
         self.login_cache.update(username, password)
         new_player.set_username(username)
         return True
     def existing_player(self, new_player, username, password):
         if username not in self.login_cache.get_dict():
-            self.cast(new_player, self.LOGIN["commands"]["invalid login"])
+            self.cast(new_player, States.LOGIN["server commands"]["invalid login"])
             return False
         if password == self.login_cache.get(username):
             new_player.set_username(username)
             return True
         else:
-            self.cast(new_player, self.LOGIN["commands"]["invalid login"])
+            self.cast(new_player, States.LOGIN["server commands"]["invalid login"])
             return False
     def login_error(self, login_type, new_player):
         # If we don't get a valid response from the client 
@@ -211,7 +192,7 @@ class Server:
         #TODO: for debugging - remove this
         print(f"Login type: {login_type}")
 
-        self.cast(new_player, self.ERROR["error"])
+        self.cast(new_player, States.ERROR["error"])
         self.idle_players.remove(new_player)
         new_player.get_connection().close()
         return True
@@ -230,7 +211,7 @@ class Server:
         max_players = game.get_max_players()
         # -1 means that we couldn't increment the value because we were already at max
         if self.waiting_game_rooms.increment_if_less_equal_x(game, max_players) == -1:
-            self.cast(player, self.CHOOSE_GAME["commands"]["room_filled"])
+            self.cast(player, States.CHOOSE_GAME["server commands"]["room_filled"])
             return False
         game.add_player(player)
         
@@ -264,7 +245,7 @@ class Server:
             # let this player choose new game
             self.handle_choose_game(player)
         else:
-            self.cast(player, self.CHOOSE_GAME["commands"]["waiting for players"])
+            self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
             return True
     
     def create_new_game(self, player, game_type_str):
@@ -273,7 +254,7 @@ class Server:
         # This is all done with the lock
         val = self.registered_games.increment_if_less_equal_x(game_type_str, MAX_GAME_INSTANCES)
         if val == -1:
-            self.cast(player, self.CHOOSE_GAME["commands"]["max_game_inst"])
+            self.cast(player, States.CHOOSE_GAME["server commands"]["max_game_inst"])
             return False
         player_list = LockedList()
         player_list.append(player)
@@ -310,12 +291,12 @@ class Server:
         else:
             # update waiting_game_rooms
             self.waiting_game_rooms.update(new_game, 1)
-            self.cast(player, self.CHOOSE_GAME["commands"]["waiting for players"])
+            self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
             return True
         
     def client_quit(self, player, game):
-        state = self.END
-        self.cast(player, state["end"])
+        state = States.END
+        self.cast(player, state["server commands"]["end"])
         self.idle_players.remove(player)
         player.get_connection().close()
         return True
@@ -327,7 +308,7 @@ class Server:
         #TODO: for debugging - remove this
         print(f"Choose game type: {choose_game_type}")
 
-        self.cast(new_player, self.ERROR["error"])
+        self.cast(new_player, States.ERROR["error"])
         self.idle_players.remove(new_player)
         new_player.get_connection().close()
         return True

@@ -2,6 +2,8 @@ import socket
 import select
 import sys
 
+from states import States
+
 PORT = 9998
 
 # List of possibe games to choose from
@@ -14,38 +16,7 @@ class Client():
     def __init__(self, hostname):
         self.hostname = hostname
         self.connection = None
-        self.state = {}
         self.username = ""
-
-        self.ERROR = {"error": "error"}
-
-        self.LOGIN = {
-            "message": "login",
-            "invalid login": "invlo",
-            "username used": "uused",
-            "set username": "suser",
-            "responses": {"enter_user_pass": self.login},
-        }
-
-        self.CHOOSE_GAME = {
-            "message": "cgame",
-            "max_game_inst": "maxgm",
-            "room_filled": "froom",
-            "waiting for players": "wplay", 
-            "responses":{"choose_game": self.choose_game}
-        }
-
-        self.BLACKJACK = {
-            "enter money": "money",
-            "place bet": "plbet",
-            "intial hand": "ihand",
-            "printing": "print",
-            "Player-choice": "SxorH",
-            "Player-choice2": "YxorN",
-            "responses":{"enter money": self.enter_money, "place bet": self.place_bet}
-        }
-
-        self.END = {"end": "endgm"}
 
     def connect_to_server(self):
         print("connecting...")
@@ -68,63 +39,61 @@ class Client():
             for sock in ready_read:
                 message = sock.recv(1024).decode('utf-8')
                 if message:
-                    if message == self.LOGIN["message"]:
+                    if message == States.LOGIN["server commands"]["login"]:
                         print("login message recieved")
-                        self.state = self.LOGIN
-                        self.state["responses"]["enter_user_pass"]()
+                        self.state = States.LOGIN
+                        self.login()
 
-                    elif message[0:5] == self.LOGIN["set username"]:
+                    elif message[0:5] == States.LOGIN["server commands"]["set username"]:
                         self.username = message[5:]
                         print(f"Welcome {self.username}!!")
                         self.connection.sendall("ok".encode('utf-8'))
                     
-                    elif message == self.LOGIN["invalid login"]:
+                    elif message == States.LOGIN["server commands"]["invalid login"]:
                         print("incorrect username or password, try again")
                         self.connection.sendall("ok".encode('utf-8'))
 
-                    elif message == self.LOGIN["username used"]:
+                    elif message == States.LOGIN["server commands"]["username used"]:
                         print("the username you entered is owned by another player. please choose a different username")
                         self.connection.sendall("ok".encode('utf-8'))
 
-                    elif message[0:5] == self.CHOOSE_GAME["message"]:
+                    elif message[0:5] == States.CHOOSE_GAME["server commands"]["choose game"]:
                         print("Choose game!!")
-                        self.state = self.CHOOSE_GAME
-                        self.state["responses"]["choose_game"](message[5:])
+                        self.choose_game(message[5:])
 
-                    elif message == self.CHOOSE_GAME["max_game_inst"]:
+                    elif message == States.CHOOSE_GAME["server commands"]["max_game_inst"]:
                         print(f"There can only be {MAX_GAME_INSTANCES} games of the same type running at the same time. Please join an existing game or choose a different type of game to play.")
                         self.connection.sendall("ok".encode('utf-8'))   
 
-                    elif message == self.CHOOSE_GAME["room_filled"]:
+                    elif message == States.CHOOSE_GAME["server commands"]["room_filled"]:
                         print("The room filled up before you got in. Please try again.")
                         self.connection.sendall("ok".encode('utf-8'))  
 
-                    elif message == self.CHOOSE_GAME["waiting for players"]:
+                    elif message == States.CHOOSE_GAME["server commands"]["waiting for players"]:
                         print("Waiting for players to join the game...")
                         self.connection.sendall("ok".encode('utf-8')) 
                     
                     ### Blackjack specific stuff ###
                     
-                    elif message[0:5] == self.BLACKJACK["printing"]:
+                    elif message[0:5] == States.BLACKJACK["server commands"]["printing"]:
                         print(message[5:])
-                        self.state = self.BLACKJACK
                         self.connection.sendall("ok".encode('utf-8')) 
                     
-                    elif message == self.BLACKJACK["enter money"]:
-                        self.state["responses"]["enter money"]()
+                    elif message == States.BLACKJACK["server commands"]["enter money"]:
+                        self.enter_money()
                     
-                    elif message[0:5] == self.BLACKJACK["place bet"]:
-                        self.state["responses"]["place bet"](message[5:])
+                    elif message[0:5] == States.BLACKJACK["server commands"]["place bet"]:
+                        self.place_bet(message[5:])
 
-                    elif message[0:5] == self.BLACKJACK["Player-choice"]:
+                    elif message[0:5] == States.BLACKJACK["server commands"]["Player-choice"]:
                         move = input("Do you want to (H)it or (S)tand? ").lower()
                         self.connection.sendall(move.encode('utf-8')) 
                     
-                    elif message[0:5] == self.BLACKJACK["Player-choice2"]:
+                    elif message[0:5] == States.BLACKJACK["server commands"]["Player-choice2"]:
                         game_check = input("Play again? (Y/N): ").lower()
                         self.connection.sendall(game_check.encode('utf-8')) 
 
-                    elif message[0:5] == self.BLACKJACK["intial hand"]:
+                    elif message[0:5] == States.BLACKJACK["server commands"]["intial hand"]:
                         hand = message[5:]
                         hand_msgs = hand.split(",")
                         print(f"\nYour Hand: {hand_msgs[0]}")
@@ -137,13 +106,13 @@ class Client():
                     
                     ###########################################################
 
-                    elif message == self.END["end"]:
+                    elif message == States.END["server commands"]["end"]:
                         print("Thank you for playing CARD-GALA, goodbye!")
                         self.connection.sendall("ok".encode('utf-8'))  
                         sock.close()
-                        exit(0)  
+                        exit(0)
                     
-                    elif message == self.ERROR["error"]:
+                    elif message == States.ERROR["server commands"]["error"]:
                         print("server recieved bad message, closing connection")
                         sock.close()
                         exit(1)           

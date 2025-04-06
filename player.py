@@ -1,10 +1,26 @@
 import socket
 
 class Player():
+    """
+    Player class
+    Represents the client connection on the server
+    """
     def __init__(self, connection: socket.socket):
+        """
+        __init__
+
+        args: 
+            connection: the TCP socket connection between the server and
+                        the client represented by a specific player object
+        Returns: None
+        Results: Initializes player variable and sets the players
+                 connection
+        """
         self.username = ""
         self.connection = connection
         self.in_game = False
+
+    # Getters and setters for player class variables
 
     def get_username(self):
         return self.username
