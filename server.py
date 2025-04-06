@@ -9,10 +9,11 @@ from locked_list import LockedList
 from states import States
 from game import Game
 from BJGame import BJGame
+from BJ2-player import BJ2Player
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4
-GAMES = {"blackjack": BJGame}
+GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player}
 ERROR = "e"
 
 class Server:
@@ -300,7 +301,7 @@ class Server:
             self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
             return True
         
-    def client_quit(self, player, game):
+    def client_quit(self, player):
         state = States.END
         self.cast(player, state["server commands"]["end"])
         self.idle_players.remove(player)

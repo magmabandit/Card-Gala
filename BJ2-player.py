@@ -5,9 +5,9 @@ import random
 from game import Game
 from states import States
 
-class BJGame(Game):
+class BJ2Player(Game):
     def __init__(self, players, room_name):
-        super().__init__(1, players, "blackjack", room_name)
+        super().__init__(2, players, "blackjack2player", room_name)
         # Game Deck
         self.deck = Deck()
         # Player and Dealer
@@ -118,7 +118,7 @@ class BJGame(Game):
     def run(self, server, players):
         """Runs the game loop."""
         # make a state for blackjack 2
-        state = States.BLACKJACK2
+        state = States.BLACKJACK
         pl1 = players[0]
         pl2 = players[1]
 
