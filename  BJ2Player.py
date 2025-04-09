@@ -1,7 +1,6 @@
 from BJDeck import Deck
 from BJPlayer import Player
 from BJDealer import Dealer
-import random
 from game import Game
 from states import States
 
