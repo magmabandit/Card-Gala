@@ -9,7 +9,7 @@ from locked_list import LockedList
 from states import States
 from game import Game
 from BJGame import BJGame
-from BJ2-player import BJ2Player
+from BJTwoPlayer import BJ2Player
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4
@@ -28,7 +28,9 @@ class Server:
         self.idle_players = LockedList()
 
         self.registered_games = LockedDict()
-        self.registered_games.update("blackjack", 0) #TODO: list of names of possible games
+        # list of names of possible games
+        self.registered_games.update("blackjack", 0)
+        self.registered_games.update("blackjack2player", 0)
         self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
