@@ -9,7 +9,8 @@ class Player:
     # create a player with a hand, money, and name
     def Make_name(self, name: str):
         self.name = name
-
+    def get_username(self):
+        return self.name
     def Make_bet(self, bet: int):
         self.money -= bet
 

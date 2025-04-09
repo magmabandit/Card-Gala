@@ -10,115 +10,142 @@ class BJ2Player(Game):
         super().__init__(2, players, "blackjack2player", room_name)
         # Game Deck
         self.deck = Deck()
+        self.deck.shuffle()
         # Player and Dealer
-        self.player = Player()
+        self.players_logic = [Player(), Player()]
         self.dealer = Dealer()
-     
+
     # Method to create a new deck if the current deck is running low
     def new_deck(self):
         if self.deck.size() < 10:
             self.deck = Deck()
             self.deck.shuffle()
-    # asks the player to place a bet
+
+    # Asks the player to place a bet
     def place_bet(self, server, state, player):
         """Handles betting before the round starts."""
-       
-        bet = int(server.call(player, state["server commands"]["place bet"] + str(self.player.Get_money())))
-        self.player.Make_bet(bet)
+        bet = int(server.call(player, state["server commands"]["place bet"] + str(player.Get_money())))
+        player.Make_bet(bet)
         return bet
-            
-    
-    # deals the initial cards to the player and the dealer: Keeps dealers
-    # second card hidden
-    def deal_initial_cards(self, server, state, player):
+
+    # Deals the initial cards to the player and the dealer: Keeps dealer's second card hidden
+    def deal_initial_cards(self, server, state, player1, player2):
         """Deals two cards to the player and the dealer."""
-        self.player.Hit(self.deck.deal_card())
-        self.player.Hit(self.deck.deal_card())
-        self.dealer.Hit(self.deck.deal_card())
-        self.dealer.Hit(self.deck.deal_card())
+        player1.Hit(self.deck.deal_card())
+        player1.Hit(self.deck.deal_card())
+        player2.Hit(self.deck.deal_card())
+        player2.Hit(self.deck.deal_card())
 
-        server.cast(player, state["server commands"]["intial hand"] + self.player.Show_hand() + "," + str(self.player.Get_hand().get_value())
-                    + "," + self.dealer.Show_first_card() + "," + str(self.dealer.Value_first_card()) )
+        server.cast(player1, state["server commands"]["intial hand"] +
+        player1.Show_hand() + "," + str(player1.Get_hand().get_value()) + "," + 
+        player2.Show_first_card() + "," + str(self.dealer.Value_first_card()))
 
-    def player_turn(self, server, state, player):
-        """Handles the player's hitting or standing."""
+        server.cast(player2, state["server commands"]["intial hand"] +
+        player1.Show_hand() + "," + str(player1.Get_hand().get_value()) + "," + 
+        player2.Show_first_card() + "," + str(self.dealer.Value_first_card()))
 
-        while True:
-            server.cast(player, state["server commands"]["printing"] + "\nYour Hand: " + self.player.Show_hand())
-            server.cast(player, state["server commands"]["printing"] + "\nHand Value: " + str(self.player.Get_hand().get_value()))
-
+    def player_turn(self, server, state, current_player, other_player):
+        """Handles the player's hitting or standing, alternating turns."""
         
-            if self.player.Get_hand().get_value() > 21:
-                server.cast(player, state["server commands"]["printing"] + "You busted")
+        while True:
+            server.cast(current_player, state["server commands"]["printing"] + "\nYour Hand: " + current_player.Show_hand())
+            server.cast(current_player, state["server commands"]["printing"] + "\nHand Value: " + str(current_player.Get_hand().get_value()))
+
+            if current_player.Get_hand().get_value() > 21:
+                server.cast(current_player, state["server commands"]["printing"] + "You busted!")
                 return False
-            move = server.call(player, state["server commands"]["Player-choice"])
-            if move == "h":
-                self.player.Hit(self.deck.deal_card())
-            elif move == "s":
+
+            move = server.call(current_player, state["server commands"]["Player-choice"])
+            if move == "h":  # Hit
+                current_player.Hit(self.deck.deal_card())
+                server.cast(current_player, state["server commands"]["printing"] + "\nYour new hand: " + current_player.Show_hand())
+            elif move == "s":  # Stand
                 break
             else:
-                server.cast(player, state["server commands"]["printing"] + 
+                server.cast(current_player, state["server commands"]["printing"] + 
                             "Invalid choice. Enter H to hit or S to stand.")
+
+            # Show the other player's current hand for visibility
+            server.cast(other_player, state["server commands"]["printing"] + 
+                        "\n" + current_player.get_username() + "'s Hand: " + current_player.Show_hand())
+            server.cast(other_player, state["server commands"]["printing"] + 
+                        "\n" + current_player.get_username() + "'s Hand Value: " + str(current_player.Get_hand().get_value()))
 
         return True
 
-    def dealer_turn(self, server, state, player):
+    def dealer_turn(self, server, state, player1, player2):
         """Dealer plays according to the rules (hit until 17+)."""
-        server.cast(player, state["server commands"]["printing"] + "\nDealer's Turn...")
-        server.cast(player, state["server commands"]["printing"] + self.dealer.Show_hand())
+
+        server.cast(player1, state["server commands"]["printing"] + "\nDealer's Turn...")
+        server.cast(player2, state["server commands"]["printing"] + "\nDealer's Turn...")
+        server.cast(player1, state["server commands"]["printing"] + self.dealer.Show_hand())
+        server.cast(player2, state["server commands"]["printing"] + self.dealer.Show_hand())
 
         self.dealer.Play_turn(self.deck)
 
-        server.cast(player, state["server commands"]["printing"] + self.dealer.Show_hand())
-        server.cast(player, state["server commands"]["printing"] + str(self.dealer.Get_hand().get_value()))
-    
+        server.cast(player1, state["server commands"]["printing"] + self.dealer.Show_hand())
+        server.cast(player2, state["server commands"]["printing"] + self.dealer.Show_hand())
+        server.cast(player1, state["server commands"]["printing"] + str(self.dealer.Get_hand().get_value()))
+        server.cast(player2, state["server commands"]["printing"] + str(self.dealer.Get_hand().get_value()))
+
     def determine_winner(self, bet, server, state, player):
         """Compares hands and determines who wins the round."""
 
-        player_value = self.player.Get_hand().get_value()
+        player_value = player.Get_hand().get_value()
         dealer_value = self.dealer.Get_hand().get_value()
-
 
         if dealer_value > 21 or player_value > dealer_value:
             server.cast(player, state["server commands"]["printing"] + "You win!")
-            self.player.add_money(bet * 1.5)
-
+            player.add_money(bet * 1.5)
         elif player_value == dealer_value:
             server.cast(player, state["server commands"]["printing"] + "It's a tie! You get your money back.")
-            self.player.add_money(bet)  
+            player.add_money(bet)  
         else:
             server.cast(player, state["server commands"]["printing"] + "Dealer wins!")
 
-    def play_round(self, server, state, player):
+    def play_round(self, server, state, player1, player2):
         """Runs a full round of Blackjack."""
 
-        if self.player.Get_money() <= 0:
-            server.cast(player, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+        if player1.Get_money() <= 0 or player2.Get_money() <= 0:
+            server.cast(player1, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            server.cast(player2, state["server commands"]["printing"] + "You're out of money! Game over :(.")
             return False
-        
+
         self.deck.shuffle()
-        bet = self.place_bet(server, state, player)
-        self.deal_initial_cards(server, state, player) #TODO
+        bet1 = self.place_bet(server, state, player1)
+        bet2 = self.place_bet(server, state, player2)
 
-        if self.player_turn(server, state, player):
-            self.dealer_turn(server, state, player)
-            self.determine_winner(bet, server, state, player)
+        self.deal_initial_cards(server, state, player1, player2)  # Deal to both players at the start
 
-        server.cast(player, state["server commands"]["printing"] + "Ammount of money left: " + str(self.player.Get_money()))
-        Game_check = server.call(player, state["server commands"]["Player-choice2"])
-        if Game_check == "y":
+        # Player 1's and Player 2's turns (alternating hits)
+        self.player_turn(server, state, player1, player2)  # Player 1's turn
+        self.player_turn(server, state, player2, player1)  # Player 2's turn
+
+        # After both players are done, dealer plays
+        self.dealer_turn(server, state, player1, player2)
+
+        self.determine_winner(bet1, server, state, player1)
+        self.determine_winner(bet2, server, state, player2)
+
+        server.cast(player1, state["server commands"]["printing"] + "Amount of money left: " + str(player1.Get_money()))
+        server.cast(player2, state["server commands"]["printing"] + "Amount of money left: " + str(player2.Get_money()))
+
+        Game_check1 = server.call(player1, state["server commands"]["Player-choice2"])
+        Game_check2 = server.call(player2, state["server commands"]["Player-choice2"])
+
+        if Game_check1 == "y" and Game_check2 == "y":
             self.player.clear_hand()
             self.dealer.clear_hand()
             self.new_deck()
-            self.play_round(server, state, player)
+            self.play_round(server, state, player1, player2)
         else:
             return False
-    
 
     def run(self, server, players):
         """Runs the game loop."""
         # make a state for blackjack 2
         state = States.BLACKJACK
+        # the client player
         pl1 = players[0]
         pl2 = players[1]
 
@@ -126,27 +153,18 @@ class BJ2Player(Game):
         server.cast(pl1, state["server commands"]["printing"] + "Welcome to blackjack, " + pl1.get_username() + "!!")
         server.cast(pl2, state["server commands"]["printing"] + "Welcome to blackjack, " + pl2.get_username() + "!!")
         name = pl1.get_username()
-        self.player.Make_name(name)
+        pl1.Make_name(name)
         name = pl2.get_username()
-        self.player.Make_name(name)
+        pl2.Make_name(name)
 
-        randombool = random.choice([True, False])
-        if randombool:
-            server.cast(pl1, state["server commands"]["printing"] + "You are the dealer")
-            server.cast(pl2, state["server commands"]["printing"] + "You are the player")
-            self.dealer = pl1
-            self.player = pl2
-        else:
-            server.cast(pl2, state["server commands"]["printing"] + "You are the dealer")
-            server.cast(pl1, state["server commands"]["printing"] + "You are the player")
-            self.dealer = pl2
-            self.player = pl1
-
-        
         # call(needs something to return)
         money = server.call(pl1, state["server commands"]["enter money"])
-        self.player.add_money(int(money))
+        pl1.add_money(int(money))
 
-        self.play_round(server, state, pl1)
+        money = server.call(pl2, state["server commands"]["enter money"])
+        pl2.add_money(int(money))
+
+        self.play_round(server, state, pl1,pl2)
+
         server.cast(pl1, state["server commands"]["printing"] + "Thanks for playing Blackjack! Goodbye!!")
         server.cast(pl2, state["server commands"]["printing"] + "Thanks for playing Blackjack! Goodbye!!")
