@@ -53,3 +53,11 @@ class States():
         },
         "client responses": {}
     }
+
+    PRESSTHEBUTTON = {
+        "server commands" : {
+            "printing": "print",
+            "time and input": "input"
+        },
+        "client responses": {"press"}
+    }

@@ -113,6 +113,10 @@ class Client():
                         print("It is your turn")
 
                         self.connection.sendall("ok".encode('utf-8')) 
+
+                    elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["printing"]:
+                        print(message[5:])
+                        self.connection.sendall("ok".encode('utf-8')) 
                     
                     ###########################################################
 
@@ -252,7 +256,7 @@ class Client():
             else:
                 print("You did not enter a valid bet. Bet must be > $0 and within your available money")
 
-
+    #####################
 
 
                 
