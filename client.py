@@ -221,19 +221,19 @@ class Client():
         entered_money = False
         while not entered_money:
             value = input("Enter the amount of money you want to start with: ")
-            if value.isdigit() and int(value) > 0:
+            if value.isdigit() and float(value) > 0:
                 self.connection.sendall(value.encode('utf-8'))
                 entered_money = True
             else:
                 print("You did not enter a valid amount of Money. Come "
-                "back when you have actual money.")
+                + "back when you have actual money.")
     
     def place_bet(self, money):
         print(f"You have ${money}")
         placed_bet = False
         while not placed_bet:
             bet = input("Enter your bet: ")
-            if bet.isdigit() and int(bet) > 0 and int(bet) <= int(money):
+            if bet.isdigit() and float(bet) > 0 and float(bet) <= float(money):
                 self.connection.sendall(bet.encode('utf-8'))
                 placed_bet = True                
             else:

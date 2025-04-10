@@ -122,7 +122,7 @@ class Server:
                 elif choose_game_type == "ngame":
                     chosen_game = self.create_new_game(player, game)
                 else:
-                    chosen_game = self.client_quit(player, game)
+                    chosen_game = self.client_quit(player)
             else:
                 chosen_game = self.choose_game_error(choose_game_type, player)
                 return ERROR 
