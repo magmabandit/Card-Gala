@@ -20,7 +20,6 @@ class States():
         }
     }
 
-    #TODO: add printing - update other server commands
     CHOOSE_GAME = {
         "server commands": {
             "choose game": "cgame",
@@ -42,6 +41,7 @@ class States():
     }
 
     ### Game States ###
+
     BLACKJACK = {
         "server commands" : {
             "enter money": "money",

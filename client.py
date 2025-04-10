@@ -1,5 +1,6 @@
 import socket
 import select
+import sys
 
 from states import States
 
@@ -12,34 +13,39 @@ MAX_GAME_INSTANCES = 4
 
 class Client():
 
-    def __init__(self, hostname):
+    def __init__(self, hostname, debug):
         self.hostname = hostname
         self.connection = None
         self.username = ""
+        self.DEBUG = debug # debug flag
 
     def connect_to_server(self):
-        print("connecting...")
+        if self.DEBUG:
+            print("connecting...", file=sys.stderr)
         conn_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         conn_sock.connect((self.hostname, PORT))
-        print("connected!!!")
+        if self.DEBUG:
+            print("connected!!!", file=sys.stderr)
 
         self.connection = conn_sock
 
     def run_client(self):
         while True:
-            print("waiting for input")
+            if self.DEBUG:
+                print("waiting for input", file=sys.stderr)
             input_list = [self.connection]
             try:
                 (ready_read, _, _) = select.select(input_list, [], [])
             except ValueError:
                 break
-
-            print("doing stuff...")
+            if self.DEBUG:
+                print("doing stuff...", file=sys.stderr)
             for sock in ready_read:
                 message = sock.recv(1024).decode('utf-8')
                 if message:
                     if message == States.LOGIN["server commands"]["login"]:
-                        print("login message recieved")
+                        if self.DEBUG:
+                            print("login message recieved", file=sys.stderr)
                         self.state = States.LOGIN
                         self.login()
 
@@ -57,11 +63,12 @@ class Client():
                         self.connection.sendall("ok".encode('utf-8'))
 
                     elif message[0:5] == States.CHOOSE_GAME["server commands"]["choose game"]:
-                        print("Choose game!!")
+                        print("Choose game from the list below: ")
                         self.choose_game(message[5:])
 
                     elif message == States.CHOOSE_GAME["server commands"]["max_game_inst"]:
-                        print(f"There can only be {MAX_GAME_INSTANCES} games of the same type running at the same time. Please join an existing game or choose a different type of game to play.")
+                        print(f"There can only be {MAX_GAME_INSTANCES} games of the same type running at the same time. \
+                              Please join an existing game or choose a different type of game to play.")
                         self.connection.sendall("ok".encode('utf-8'))   
 
                     elif message == States.CHOOSE_GAME["server commands"]["room_filled"]:
@@ -116,16 +123,19 @@ class Client():
                         exit(0)
                     
                     elif message == States.ERROR["server commands"]["error"]:
-                        print("server recieved bad message, closing connection")
+                        if self.DEBUG:
+                            print("server recieved bad message, closing connection", file=sys.stderr)
                         sock.close()
                         exit(1)           
 
                     else:
-                        print(f"Error: incorrect message {message} recieved")
+                        if self.DEBUG:
+                            print(f"Error: incorrect message {message} recieved", file=sys.stderr)
                         sock.close()
                         exit(1)
                 else:
-                    print("Server disconnected")
+                    if self.DEBUG:
+                        print("Server disconnected", file=sys.stderr)
                     sock.close()
                     exit(1)
     
@@ -167,15 +177,18 @@ class Client():
             num = 1
             for game in waiting_games:
                 if game != "":
-                    print(f"game: {game}")
+                    print("------------------------------------------------")
                     game_info = game.split(":")
-                    print(f"game info: {game_info}")
+                    if self.DEBUG:
+                        print(f"game: {game}")
+                        print(f"game info: {game_info}", file=sys.stderr)
                     room_names.append(game_info[0])
                     print(f"Game #{num}")
                     print(f"room name: {game_info[0]}")
                     print(f"game type: {game_info[1]}")
                     print(f"players: {game_info[2]}")
                     print(f"number of spots left: {game_info[3]}")
+                    print("------------------------------------------------")
                     print()
                     num += 1
 
