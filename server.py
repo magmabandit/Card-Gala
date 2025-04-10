@@ -35,25 +35,30 @@ class Server:
         self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.logger = logging.getLogger(__name__)
 
     #TODO: clean cleanup with quit
     def run_server(self):
+
         try:
             while True:
                 # When a new client attempts to connect, accept the connection
                 # and init the new player
-                print("Accepting new connection")
+                self.logger.debug("Accepting new connection")
+                # self.logger.debug("Accepting new connection")
                 new_conn, addr = self.listen_socket.accept() # this command is blocking by default
                 new_player = Player(connection=new_conn)
                 self.idle_players.append(new_player)
-                print("New connection accepted")
+                self.logger.debug("New connection accepted")
+                self.logger.debug("New connection accepted")
 
-                print("Starting new player")
+                self.logger.debug("Starting new player")
                 player_thread = threading.Thread(target=self.host_player, args=[new_player])
-                print("new player thread created")
+                self.logger.debug("new player thread created")
                 self.player_threads.append(player_thread)
                 player_thread.start()
-                print("new player started")
+                self.logger.debug("new player started")
 
                 for t in self.player_threads:
                     if not t.is_alive():
@@ -73,22 +78,22 @@ class Server:
 
         logged_in = False
         while not logged_in:
-            print("logging in!!")
+            self.logger.debug("logging in!!")
             # Initiate the login sequence and get 
             # returning/exisiting user, username, password from client
             response = self.call(player, state["server commands"]["login"])
             if response is None: # The client connection closed
-                print("Killing thread")
+                self.logger.debug("Killing thread")
                 return ERROR #kill the thread
             login_type = response[0:5]
             user_pass = response[5:].split(",")
-            print(f"user_pass: {user_pass}")
+            self.logger.debug(f"user_pass: {user_pass}")
             username = user_pass[0]
-            print(f"username: {username}")
+            self.logger.debug(f"username: {username}")
             password = user_pass[1]
-            print(f"password: {password}")
+            self.logger.debug(f"password: {password}")
 
-            print(f"login type: {login_type}, username: {username}, password: {password}")
+            self.logger.debug(f"login type: {login_type}, username: {username}, password: {password}")
 
             # Log player in
             responses = state["client responses"]["login"]
@@ -108,10 +113,10 @@ class Server:
 
         chosen_game = False
         while not chosen_game:
-            print("Entering choose game state")
+            self.logger.debug("Entering choose game state")
             response = self.call(player, state["server commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
             if response is None: # The client connection closed
-                print("Killing thread")
+                self.logger.debug("Killing thread")
                 return ERROR #kill the thread 
             choose_game_type = response[0:5]
             game = response[5:]
@@ -132,20 +137,20 @@ class Server:
     # If a player has disconnected the player will be removed
     #   from idle_players and the connection is closed
     def call(self, player: Player, message: str):
-        print(f"Sending message {message}")
+        self.logger.debug(f"Sending message {message}")
         connection = player.get_connection()
         connection.sendall(message.encode('utf-8'))
-        print("Message sent")
+        self.logger.debug("Message sent")
      
         (ready_read, _, _) = select.select([connection], [], [])
         print ("recieved response")
         data = connection.recv(1024)
         if data != b'': # Recieved response from client
             response = data.decode('utf-8')
-            print(f"Response: {response}")
+            self.logger.debug(f"Response: {response}")
             return response
         else: # Client has disconnected
-            print("Client disconnected")
+            self.logger.debug("Client disconnected")
             self.idle_players.remove(player)
             connection.close()
 
@@ -167,7 +172,7 @@ class Server:
                 self.idle_players.remove(player)
                 connection.close()
         else: # Client has disconnected
-            print("Client disconnected")
+            self.logger.debug("Client disconnected")
             self.idle_players.remove(player)
             connection.close()
 
@@ -194,7 +199,7 @@ class Server:
         # raise an error and terminate the connection
 
         #TODO: for debugging - remove this
-        print(f"Login type: {login_type}")
+        self.logger.debug(f"Login type: {login_type}")
 
         self.cast(new_player, States.ERROR["error"])
         self.idle_players.remove(new_player)
@@ -222,7 +227,7 @@ class Server:
         
         if game.get_max_players() == game.get_num_players():
             # start game
-            print("starting game")
+            self.logger.debug("starting game")
             self.waiting_game_rooms.remove(game)
             for pl in game.get_players():
                 self.idle_players.remove(pl) 
@@ -240,12 +245,12 @@ class Server:
 
                 # create and start new threads for all players to choose game again
                 if pl != player:
-                    print("Starting new player")
+                    self.logger.debug("Starting new player")
                     player_thread = threading.Thread(target=self.handle_choose_game, args=[pl])
-                    print("new player thread created")
+                    self.logger.debug("new player thread created")
                     self.player_threads.append(player_thread)
                     player_thread.start()
-                    print("new player started")
+                    self.logger.debug("new player started")
 
             # let this player choose new game
             self.handle_choose_game(player)
@@ -272,7 +277,7 @@ class Server:
         
         if new_game.get_max_players() == 1:
             # start game
-            print("starting game")
+            self.logger.debug("starting game")
             for pl in new_game.get_players():
                 self.idle_players.remove(pl) 
             p = Process(target=new_game.run, args=[self, new_game.get_players()])
@@ -289,12 +294,12 @@ class Server:
 
                 # create and start new threads for all players to choose game again
                 if pl != player:
-                    print("Starting new player")
+                    self.logger.debug("Starting new player")
                     player_thread = threading.Thread(target=self.handle_choose_game, args=[pl])
-                    print("new player thread created")
+                    self.logger.debug("new player thread created")
                     self.player_threads.append(player_thread)
                     player_thread.start()
-                    print("new player started")
+                    self.logger.debug("new player started")
 
             # let this player choose new game
             self.handle_choose_game(player)
@@ -316,7 +321,7 @@ class Server:
         # raise an error and terminate the connection
 
         #TODO: for debugging - remove this
-        print(f"Choose game type: {choose_game_type}")
+        self.logger.debug(f"Choose game type: {choose_game_type}")
 
         self.cast(new_player, States.ERROR["error"])
         self.idle_players.remove(new_player)
