@@ -58,7 +58,7 @@ class States():
         "server commands" : {
             "printing": "print",
             "countdown": "cdown",
-            "time and input": "input"
+            "listen-keypress": "press",
         },
-        "client responses": {"press"}
+        "client responses": {}
     }

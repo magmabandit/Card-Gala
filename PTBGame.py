@@ -2,24 +2,26 @@
 import threading
 import time
 import random
+import string
 
 from game import Game
 from states import States
+from player import Player
 
-class Player:
+class PTBPlayer:
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
         return f"{self.name}"
     
-#TODO: Register game on serverside & commands on clientside
+# Register game on serverside & commands on clientside
 class PressTheButton(Game):
-    def __init__(self, players, room_name):
+    def __init__(self, players:list[Player], room_name):
         points = 3 # can modify this based on the size of game you want
         super().__init__(2, players, "pressthebutton", room_name)
 
-        self.players = [Player(f"Player {i+1}") for i in range(len(players))]
+        self.players = [PTBPlayer(p.get_username()) for p in players]
         
         self.points = points # number of points needed to win
         self.round_winner = None
@@ -31,34 +33,51 @@ class PressTheButton(Game):
 
         # global winner of game
         self.total_winner = None
-    def handle_player_turn(self, player):
-
+    
+    def handle_player_turn(self, player, server, state, barrier):
+        # choose a random key on the keyboard to press
+        key_to_press = random.choice(string.ascii_letters + string.digits)
+        server.cast(player, state["server commands"]["printing"] + f"!!! PRESS [{key_to_press}] !!!")
+        barrier.wait() # rendezous threads before listening for keypresses
         while True: 
             if not self.game_over:
-                
-            if not self.game_over:
-                try:  # used try so that if user pressed other than the given key error will not be shown
-                    with self.lock:
-                    if keyboard.is_pressed('b'):  # if key 'b' is pressed 
-                            print(f'{player.name} - Button pressed!')
-                            if not self.game_over:
-                                self.round_winner = player
+                # checks if client pressed the right key on the keyboard
+                res = server.call(player, state["server commands"]["listen-keypress"] + key_to_press)
+                with self.lock:
+                    # client presses correct key
+                    if res == "t":
+                        if not self.game_over:
+                            self.round_winner = player
                         return
-                except:
-                    time.sleep(.05)  
-                    continue
+                time.sleep(0.001)
             else: return
 
-    def play(self, server, players):
+    # resets round-based game vars for continued use
+    # game_over, round_winner
+    def reset_game(self):
+        self.game_over = False
+        self.round_winner = None
+
+    def print_curr_score(self, players:list[Player], server, state):
+        for p in players:
+            server.cast(p, state["server commands"]["printing"] + "--------------------------")
+            server.cast(p, state["server commands"]["printing"] + f"{self.points} points needed to win!")
+        for player in players:
+            if player in self.winners:
+                print(f"{player.get_username()} - {self.winners[player]}")
+        for p in players:
+            server.cast(p, state["server commands"]["printing"] + "--------------------------")       
+
+
+    def run(self, server, players):
         state = States.PRESSTHEBUTTON
-        
+         
         for p in players:
             server.cast(p, state["server commands"]["printing"] +
             f"Welcome to Press the Button! Whoever gets {self.points}" 
                 " points first wins! Press 'b' to press the button first!")
         time.sleep(2)
 
-        # TODO: IMPLEMENT
         # each thread should send separate players prompt to press button under
         # a certain amount of time and should be able to recieve & store client
         # response time. Randomize key to press per player to make game 'fun'
@@ -72,14 +91,15 @@ class PressTheButton(Game):
                 server.cast(p, state["server commands"]["countdown"] + str(random.randint(1, 6)))  
             
             threads = []
-            for player in self.players:
-                thread = threading.Thread(target=self.handle_player_turn, args=(player,))
+            for player in players:
+                thread = threading.Thread(target=self.handle_player_turn, args=(player,server,state,threading.Barrier(len(players))))
                 threads.append(thread)
                 thread.start()
 
             for thread in threads:
                 thread.join()
-            print(f"End of Round - {self.round_winner.name} wins round {round}!")
+            for p in players:
+                server.cast(p, state["server commands"]["countdown"] + f"End of Round - {self.round_winner.name} wins round {round}!")
             # count score of round winner and determine if game is over
             if self.round_winner not in self.winners:
                 self.winners[self.round_winner] = 1
@@ -93,6 +113,6 @@ class PressTheButton(Game):
             self.reset_game()
             round += 1
             time.sleep(1)
-            self.print_curr_score()
+            self.print_curr_score(players, server, state)
             time.sleep(2)
     

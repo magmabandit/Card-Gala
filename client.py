@@ -5,6 +5,7 @@ import sys
 # for PTB
 import tqdm
 import time
+import keyboard
 
 from states import States
 
@@ -121,12 +122,19 @@ class Client():
                     elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["printing"]:
                         print(message[5:])
                         self.connection.sendall("ok".encode('utf-8')) 
-                    elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["cdown"]:
+                    elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["countdown"]:
                         t = int(message[5:])
                         for i in tqdm(range(t)):
                             time.sleep(0.5)
                         self.connection.sendall("ok".encode('utf-8')) 
-                    
+                    elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["listen-keypress"]:
+                        key = message[6]
+                        try:
+                            if keyboard.is_pressed(key):  # if key is pressed 
+                                self.connection.sendall("t".encode('utf-8')) 
+                        except:
+                            self.connection.sendall("f".encode('utf-8')) 
+                            
                     ###########################################################
 
                     elif message == States.END["server commands"]["end"]:

@@ -12,9 +12,11 @@ from game import Game
 from BJGame import BJGame
 from BJTwoPlayer import BJ2Player
 
+import PTBGame
+
 PORT = 9998
 MAX_GAME_INSTANCES = 4
-GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player}
+GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PTBGame}
 ERROR = "e"
 
 class Server:
@@ -32,6 +34,7 @@ class Server:
         # list of names of possible games
         self.registered_games.update("blackjack", 0)
         self.registered_games.update("blackjack2player", 0)
+        self.registered_games.update("pressthebutton", 0)
         self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
