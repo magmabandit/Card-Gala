@@ -31,7 +31,23 @@ class PressTheButton(Game):
 
         # global winner of game
         self.total_winner = None
+    def handle_player_turn(self, player):
 
+        while True: 
+            if not self.game_over:
+                
+            if not self.game_over:
+                try:  # used try so that if user pressed other than the given key error will not be shown
+                    with self.lock:
+                    if keyboard.is_pressed('b'):  # if key 'b' is pressed 
+                            print(f'{player.name} - Button pressed!')
+                            if not self.game_over:
+                                self.round_winner = player
+                        return
+                except:
+                    time.sleep(.05)  
+                    continue
+            else: return
 
     def play(self, server, players):
         state = States.PRESSTHEBUTTON
@@ -49,10 +65,11 @@ class PressTheButton(Game):
         round = 1
         # play until a winner is found
         while self.total_winner is None:
-            print(f"======================= \n \
-            ROUND {round}\n =======================")
-            for i in tqdm(range(random.randint(1, 6))):
-                time.sleep(0.5)  
+            for p in players:
+                server.cast(p, state["server commands"]["printing"] + f"======================= \n \
+                ROUND {round}\n =======================")
+            for p in players:
+                server.cast(p, state["server commands"]["countdown"] + str(random.randint(1, 6)))  
             
             threads = []
             for player in self.players:

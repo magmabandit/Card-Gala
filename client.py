@@ -2,6 +2,10 @@ import socket
 import select
 import sys
 
+# for PTB
+import tqdm
+import time
+
 from states import States
 
 PORT = 9998
@@ -116,6 +120,11 @@ class Client():
 
                     elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["printing"]:
                         print(message[5:])
+                        self.connection.sendall("ok".encode('utf-8')) 
+                    elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["cdown"]:
+                        t = int(message[5:])
+                        for i in tqdm(range(t)):
+                            time.sleep(0.5)
                         self.connection.sendall("ok".encode('utf-8')) 
                     
                     ###########################################################
@@ -258,7 +267,7 @@ class Client():
 
     #####################
 
-
-                
+    ### PressTheButton functions ###
+       
 
 

@@ -57,6 +57,7 @@ class States():
     PRESSTHEBUTTON = {
         "server commands" : {
             "printing": "print",
+            "countdown": "cdown",
             "time and input": "input"
         },
         "client responses": {"press"}
