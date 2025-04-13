@@ -12,7 +12,7 @@ from states import States
 PORT = 9998
 
 # List of possibe games to choose from
-GAMES = ["blackjack", "blackjack2player"]
+GAMES = ["blackjack", "blackjack2player", "crazy8", "press the button"]
 
 MAX_GAME_INSTANCES = 4
 

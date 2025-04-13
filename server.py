@@ -11,12 +11,14 @@ from states import States
 from game import Game
 from BJGame import BJGame
 from BJTwoPlayer import BJ2Player
+from CrazyEight import CrazyEight
 
 import PTBGame
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4
-GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PTBGame}
+GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PTBGame,
+         "crazy8":CrazyEight}
 ERROR = "e"
 
 class Server:
