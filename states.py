@@ -49,7 +49,10 @@ class States():
             "intial hand": "ihand",
             "printing": "print",
             "Player-choice": "SxorH",
-            "Player-choice2": "YxorN"
+            "Player-choice2": "YxorN",
+            "rank": "crank",
+            "suit": "csuit",
+            "suit_change": "suitch",
         },
         "client responses": {}
     }

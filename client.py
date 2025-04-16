@@ -96,7 +96,15 @@ class Client():
                     
                     elif message == States.BLACKJACK["server commands"]["enter money"]:
                         self.enter_money()
-                    
+                    elif message == States.BLACKJACK["server commands"]["rank"]:
+                        value = input("Enter rank of card: EX. A, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K: ")
+                        self.connection.sendall(value.encode('utf-8'))
+                    elif message == States.BLACKJACK["server commands"]["suit"]:
+                        value = input("Enter suit of card: Hearts, Diamonds, Clubs, Spades:")
+                        self.connection.sendall(value.encode('utf-8'))
+                    elif message == States.BLACKJACK["server commands"]["suit_change"]:
+                        value = input("Enter suit the top card will be: Hearts, Diamonds, Clubs, Spades:")
+                        self.connection.sendall(value.encode('utf-8'))
                     elif message[0:5] == States.BLACKJACK["server commands"]["place bet"]:
                         self.place_bet(message[5:])
 
