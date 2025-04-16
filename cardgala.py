@@ -5,7 +5,7 @@ from client import Client
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--hostname', '--h')
-    parser.add_argument("-d", required=False, action='store_true')
+    parser.add_argument("-d", required=False, default=False, action='store_true')
     args = parser.parse_args()
 
     client = None

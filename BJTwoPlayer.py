@@ -1,3 +1,5 @@
+import threading
+
 from BJDeck import Deck
 from BJPlayer import Player
 from BJDealer import Dealer
@@ -13,6 +15,8 @@ class BJ2Player(Game):
         # Player and Dealer
         self.players_logic = [Player(), Player()]
         self.dealer = Dealer()
+        self.bet1 = None
+        self.bet2 = None
 
     # Method to create a new deck if the current deck is running low
     def new_deck(self):
@@ -137,6 +141,14 @@ class BJ2Player(Game):
         else:
             server.cast(player, state["server commands"]["printing"] + "Dealer wins!")
 
+    def place_player_bet(self, server, pl, state, player):
+        bet = int(server.call(pl, state["server commands"]["place bet"] + str(player.Get_money())))
+        if player == self.players_logic[0]:
+            self.bet1 = bet
+        else:
+            self.bet2 = bet
+        player.Make_bet(bet)
+
     def play_round(self, server, state, pl1, pl2):
         """Runs a full round of Blackjack."""
         player1 = self.players_logic[0]
@@ -154,11 +166,13 @@ class BJ2Player(Game):
             return False
 
         self.deck.shuffle()
-        bet1 = int(server.call(pl1, state["server commands"]["place bet"] + str(player1.Get_money())))
-        player1.Make_bet(bet1)
-        bet2 = int(server.call(pl2, state["server commands"]["place bet"] + str(player2.Get_money())))
-        player2.Make_bet(bet2)
-
+        player1_thread = threading.Thread(target=self.place_player_bet, args=[server, pl1, state, player1])
+        player2_thread = threading.Thread(target=self.place_player_bet, args=[server, pl2, state, player2])
+        player1_thread.start()
+        player2_thread.start()
+        player1_thread.join()
+        player2_thread.join()
+        
         self.deal_initial_cards(server, state, pl1, pl2)  # Deal to both players at the start
 
         # Player 1's and Player 2's turns (alternating hits)
@@ -170,9 +184,9 @@ class BJ2Player(Game):
             self.dealer_turn(server, state, pl1, pl2)
 
         if pl1_not_busted:
-            self.determine_winner(bet1, server, state, pl1, True)
+            self.determine_winner(self.bet1, server, state, pl1, True)
         if pl2_not_busted:
-            self.determine_winner(bet2, server, state, pl2, False)
+            self.determine_winner(self.bet2, server, state, pl2, False)
 
         server.cast(pl1, state["server commands"]["printing"] + "Amount of money left: " + str(player1.Get_money()))
         server.cast(pl2, state["server commands"]["printing"] + "Amount of money left: " + str(player2.Get_money()))
@@ -188,6 +202,16 @@ class BJ2Player(Game):
             self.play_round(server, state, pl1, pl2)
         else:
             return False
+        
+    def welcome_add_money(self, server, pl1, state, player1):
+        # send welcome message(cast printing)
+        server.cast(pl1, state["server commands"]["printing"] + "Welcome to blackjack, " + pl1.get_username() + "!!")
+        name = pl1.get_username()
+        player1.Make_name(name)
+
+        # call(needs something to return)
+        money = server.call(pl1, state["server commands"]["enter money"])
+        player1.add_money(int(money))
 
     def run(self, server, players):
         """Runs the game loop."""
@@ -200,20 +224,14 @@ class BJ2Player(Game):
         # game state players
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
-        # send welcome message(cast printing)
-        server.cast(pl1, state["server commands"]["printing"] + "Welcome to blackjack, " + pl1.get_username() + "!!")
-        server.cast(pl2, state["server commands"]["printing"] + "Welcome to blackjack, " + pl2.get_username() + "!!")
-        name = pl1.get_username()
-        player1.Make_name(name)
-        name = pl2.get_username()
-        player2.Make_name(name)
 
-        # call(needs something to return)
-        money = server.call(pl1, state["server commands"]["enter money"])
-        player1.add_money(int(money))
-
-        money = server.call(pl2, state["server commands"]["enter money"])
-        player2.add_money(int(money))
+        player1_thread = threading.Thread(target=self.welcome_add_money, args=[server, pl1, state, player1])
+        player2_thread = threading.Thread(target=self.welcome_add_money, args=[server, pl2, state, player2])
+        player1_thread.start()
+        player2_thread.start()
+        player1_thread.join()
+        player2_thread.join()
+        
 
         self.play_round(server, state, pl1,pl2)
 
