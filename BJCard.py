@@ -10,6 +10,10 @@ class Card:
             return 10
         else:
             return int(self.rank)
+    def get_suit(self):
+        return self.suit
+    def get_rank(self):
+        return self.rank
         
     def __str__(self):
         return f"{self.rank}{self.suit}"

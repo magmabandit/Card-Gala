@@ -19,3 +19,5 @@ class Deck:
         return self.cards.pop()
     def size(self):
         return len(self.cards)
+    def is_empty(self):
+        return len(self.cards) == 0

@@ -142,8 +142,14 @@ class BJ2Player(Game):
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
 
-        if player1.Get_money() <= 0 or player2.Get_money() <= 0:
+        if player1.Get_money() <= 0 and player2.Get_money() <= 0:
             server.cast(pl1, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            server.cast(pl2, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            return False
+        elif player1.Get_money() <= 0:
+            server.cast(pl1, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            return False
+        elif player2.Get_money() <= 0:
             server.cast(pl2, state["server commands"]["printing"] + "You're out of money! Game over :(.")
             return False
 
