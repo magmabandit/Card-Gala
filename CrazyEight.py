@@ -4,7 +4,7 @@ from BJDeck import Deck
 from game import Game
 from states import States
 from CrazyEightPlayer import Player
-class CrazyEight(Deck):
+class CrazyEight(Game):
     def __init__(self, players, room_name):
         super().__init__(2, players, "crazy8", room_name)
         self.deck = Deck()
@@ -50,21 +50,27 @@ class CrazyEight(Deck):
                 server.cast(player_cast, state["server commands"]["printing"] + "No valid cards, drawing until a playable one.\n")
             # Prompt player to choose a card
             playable_cards = player_game.hand.get_playable_cards(self.top_card)
+            server.cast(player_cast, state["server commands"]["printing"] + "Playable cards:\n")
             for c in playable_cards:
                 server.cast(player_cast, state["server commands"]["printing"] + str(c))
-            while True:
+
+            not_played_card = True
+            while not_played_card:
                 suit = server.call(player_cast, state["server commands"]["suit"])
                 rank = server.call(player_cast, state["server commands"]["rank"])
                 card = Card(rank, suit)
-                if card in playable_cards:
-                    player_game.play_card(card, self.top_card)
-                    self.discard_pile.append(self.top_card)
-                    if card.rank == "8":
-                        new_suit = server.call(player_cast, state["server commands"]["suit_change"])
-                        self.top_card = Card("8", new_suit)
-                    else:
-                        self.top_card = card
-                    break
+                test_card = card.__str__()
+                for cards in playable_cards:
+                    if test_card == cards.__str__():
+                        player_game.play_card(card, self.top_card)
+                        self.discard_pile.append(self.top_card)
+                        if card.rank == "8":
+                            new_suit = server.call(player_cast, state["server commands"]["suit_change"])
+                            self.top_card = Card("8", new_suit)
+                        else:
+                            self.top_card = card
+                        not_played_card = False
+                        break
                 else:
                     server.cast(player_cast, state["server commands"]["printing"] + "Invalid card. Please try again.\n")
 

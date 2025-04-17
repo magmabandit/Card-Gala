@@ -29,7 +29,7 @@ class States():
             "printing": "print",
         },
         "client responses": {
-            "choose game": ["egame", "ngame", "quitg"]
+            "choose game": ["egame", "ngame", "updat", "quitg"]
         }
     }
 

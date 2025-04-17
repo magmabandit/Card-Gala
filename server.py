@@ -13,11 +13,11 @@ from BJGame import BJGame
 from BJTwoPlayer import BJ2Player
 from CrazyEight import CrazyEight
 
-import PTBGame
+from PTBGame import PressTheButton
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4
-GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PTBGame,
+GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PressTheButton,
          "crazy8":CrazyEight}
 ERROR = "e"
 
@@ -34,9 +34,8 @@ class Server:
 
         self.registered_games = LockedDict()
         # list of names of possible games
-        self.registered_games.update("blackjack", 0)
-        self.registered_games.update("blackjack2player", 0)
-        self.registered_games.update("pressthebutton", 0)
+        for game in GAMES:
+            self.registered_games.update(game, 0)
         self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
@@ -132,6 +131,8 @@ class Server:
                     chosen_game = self.add_player_to_game(player, game)
                 elif choose_game_type == "ngame":
                     chosen_game = self.create_new_game(player, game)
+                elif choose_game_type == "updat":
+                    chosen_game = False
                 else:
                     chosen_game = self.client_quit(player)
             else:
@@ -225,7 +226,7 @@ class Server:
             return False
         max_players = game.get_max_players()
         # -1 means that we couldn't increment the value because we were already at max
-        if self.waiting_game_rooms.increment_if_less_equal_x(game, max_players) == -1:
+        if self.waiting_game_rooms.increment_if_less_x(game, max_players) == -1:
             self.cast(player, States.CHOOSE_GAME["server commands"]["room_filled"])
             return False
         game.add_player(player)
@@ -256,9 +257,9 @@ class Server:
                     self.player_threads.append(player_thread)
                     player_thread.start()
                     self.logger.debug("new player started")
-
-            # let this player choose new game
-            self.handle_choose_game(player)
+                else:
+                    # let this player choose new game
+                    return False
         else:
             self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
             return True
@@ -272,7 +273,7 @@ class Server:
                               "You didn't enter a valid game type, try again")
             return False
 
-        val = self.registered_games.increment_if_less_equal_x(game_type_str, MAX_GAME_INSTANCES)
+        val = self.registered_games.increment_if_less_x(game_type_str, MAX_GAME_INSTANCES)
         if val == -1:
             self.cast(player, States.CHOOSE_GAME["server commands"]["max_game_inst"])
             return False
@@ -292,9 +293,11 @@ class Server:
             p.join()
 
             # Clean up game
+            self.logger.debug("Cleaning up game")
             old_game_players = new_game.get_players()
             self.registered_games.decrement(new_game.get_game_type())
             for pl in old_game_players:
+                self.logger.debug("In loop")
                 self.idle_players.append(pl) 
 
                 # create and start new threads for all players to choose game again
@@ -305,9 +308,9 @@ class Server:
                     self.player_threads.append(player_thread)
                     player_thread.start()
                     self.logger.debug("new player started")
-
-            # let this player choose new game
-            self.handle_choose_game(player)
+                else:
+                    # let this player choose new game
+                    return False
         else:
             # update waiting_game_rooms
             self.waiting_game_rooms.update(new_game, 1)

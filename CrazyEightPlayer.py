@@ -22,23 +22,20 @@ class Player:
     def clear_hand(self):
         self.hand = Hand()
 
-    def remove_card(self, card: Card):
-        self.hand.remove_card(card)
-
     def play_card(self, card: Card, top_card: Card):
         """Play a card from the hand if it's valid."""
-        if card not in self.hand.cards:
+        found_card = False
+        for cards in self.hand.cards:
+            if card.__str__() == cards.__str__():
+                found_card = True
+                break
+        
+        if not found_card:
             print(f"{self.name} does not have the card {card}.")
             return False
 
-        playable_cards = self.hand.get_playable_cards(top_card)
-
-        if card in playable_cards:
-            self.hand.remove_card(card)
-            return True
-        else:
-            print(f"{card} is not a valid play on top of {top_card}.")
-            return False
+        self.hand.remove_card(card)
+        return True
         
     def has_won(self):
         return len(self.hand.cards) == 0

@@ -12,7 +12,7 @@ from states import States
 PORT = 9998
 
 # List of possibe games to choose from
-GAMES = ["blackjack", "blackjack2player", "crazy8", "press the button"]
+GAMES = ["blackjack", "blackjack2player", "crazy8", "pressthebutton"]
 
 MAX_GAME_INSTANCES = 4
 
@@ -228,7 +228,7 @@ class Client():
         response = ""
         chosen_game = False
         while not chosen_game:
-            create_or_join = input("Do you want to create a new game or join an existing one? (c/j). Type q to quit the game.")
+            create_or_join = input("Do you want to create a new game or join an existing one? Type u to get an updated list of availible games. (c/j/u). Type q to quit the game.")
             if create_or_join == "j":
                 if can_join:
                     num_rooms = len(room_names)
@@ -241,6 +241,9 @@ class Client():
             elif create_or_join == "c":
                 game_type = input(f"Which of the following games do you want to play: {GAMES}")
                 response = "ngame" + game_type
+                chosen_game = True
+            elif create_or_join == "u":
+                response = "updat"
                 chosen_game = True
             elif create_or_join == "q":
                 response = "quitg"

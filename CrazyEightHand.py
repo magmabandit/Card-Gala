@@ -16,10 +16,14 @@ class Hand:
             return "No cards in hand"
         
     def remove_card(self, card: Card):
-        if card in self.cards:
-            self.cards.remove(card)
-        else:
-            raise ValueError(f"Card {card} not found in hand.")
+        found_card = False
+        for cards in self.cards:
+            if card.__str__() == cards.__str__():
+                found_card = True
+                self.cards.remove(cards)
+                break
+        if not found_card:
+            raise RuntimeError("Card not in player hand")
 
     def get_playable_cards(self, top_card: Card):
         playable_cards = [

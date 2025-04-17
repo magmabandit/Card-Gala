@@ -43,7 +43,7 @@ class LockedDict():
         with self.lock:
             return self.dict
         
-    def increment_if_less_equal_x(self, key, x):
+    def increment_if_less_x(self, key, x):
         """
         If the value specified by dict[key] is less than the
         value specified by x, return the value specified by
@@ -53,7 +53,7 @@ class LockedDict():
               have the value -1 
         """
         with self.lock:
-            if self.dict[key] <= x:
+            if self.dict[key] < x:
                 self.dict[key] += 1
                 return self.dict[key]
             else:
