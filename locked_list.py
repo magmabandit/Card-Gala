@@ -58,3 +58,10 @@ class LockedList():
         """
         with self.lock:
             return len(self.list)
+        
+    def __iter__(self):
+        """
+        Returns: an iterator over a **shallow copy** of the list to ensure thread safety.
+        """
+        with self.lock:
+            return iter(self.list.copy())
