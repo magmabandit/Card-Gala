@@ -21,7 +21,7 @@ class PressTheButton(Game):
         points = 3 # can modify this based on the size of game you want
         super().__init__(2, players, "pressthebutton", room_name)
 
-        self.players = [PTBPlayer(p.get_username()) for p in players]
+        self.ptb_players = [PTBPlayer(p.get_username()) for p in players]
         
         self.points = points # number of points needed to win
         self.round_winner = None
@@ -38,17 +38,17 @@ class PressTheButton(Game):
         # choose a random key on the keyboard to press
         key_to_press = random.choice(string.ascii_letters + string.digits)
         server.cast(player, state["server commands"]["printing"] + f"!!! PRESS [{key_to_press}] !!!")
-        barrier.wait() # rendezous threads before listening for keypresses
+        # barrier.wait() # rendezous threads before listening for keypresses
+        # raise KeyboardInterrupt
         while True: 
             if not self.game_over:
                 # checks if client pressed the right key on the keyboard
                 res = server.call(player, state["server commands"]["listen-keypress"] + key_to_press)
-                with self.lock:
                     # client presses correct key
-                    if res == "t":
-                        if not self.game_over:
-                            self.round_winner = player
-                        return
+                if res == "t":
+                    if not self.game_over:
+                        self.round_winner = player
+                    return
                 time.sleep(0.001)
             else: return
 
@@ -89,7 +89,6 @@ class PressTheButton(Game):
                 ROUND {round}\n =======================")
             for p in players:
                 server.cast(p, state["server commands"]["countdown"] + str(random.randint(1, 6)))  
-            
             threads = []
             for player in players:
                 thread = threading.Thread(target=self.handle_player_turn, args=(player,server,state,threading.Barrier(len(players))))

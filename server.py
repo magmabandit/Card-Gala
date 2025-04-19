@@ -279,6 +279,7 @@ class Server:
             return False
         player_list = LockedList()
         player_list.append(player)
+        self.logger.debug("HAHA!!!", str(type(player_list)))
         new_game = GAMES[game_type_str](players=player_list, room_name= f"{game_type_str}{val}")
         
         if new_game.get_max_players() == 1:

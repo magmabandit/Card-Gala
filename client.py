@@ -132,16 +132,19 @@ class Client():
                         self.connection.sendall("ok".encode('utf-8')) 
                     elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["countdown"]:
                         t = int(message[5:])
-                        for i in tqdm(range(t)):
+                        for i in tqdm.tqdm(range(t)):
                             time.sleep(0.5)
                         self.connection.sendall("ok".encode('utf-8')) 
                     elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["listen-keypress"]:
                         key = message[6]
-                        try:
-                            if keyboard.is_pressed(key):  # if key is pressed 
-                                self.connection.sendall("t".encode('utf-8')) 
-                        except:
-                            self.connection.sendall("f".encode('utf-8')) 
+                        while True:
+                            try:
+                                if keyboard.is_pressed(key):  # if key is pressed 
+                                    self.connection.sendall("t".encode('utf-8')) 
+                                    return
+                            except:
+                                self.connection.sendall("f".encode('utf-8'))
+                                return 
                             
                     ###########################################################
 

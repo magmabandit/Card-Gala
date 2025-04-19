@@ -82,6 +82,7 @@ class LockedDict():
             for game in self.dict.keys():
                 game_type = game.get_game_type() # Game type
                 room_name = game.get_room_name() # Room name
+                print("TYPE OF PLAYERS LIST OBJ ====>", type(game.players))
                 players = game.get_players()
                 players = list(map(lambda x: x.get_username(), players))
                 # Username of players in the room
