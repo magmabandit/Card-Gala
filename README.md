@@ -16,7 +16,4 @@ argparse
 multiprocessing
 logging
 
-Do we actually use these?
--------------------------
-keyboard
 tqdm

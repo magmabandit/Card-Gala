@@ -6,6 +6,7 @@ import sys
 import tqdm
 import time
 import keyboard
+from pynput import keyboard as pynput_keyboard
 
 from states import States
 
@@ -136,15 +137,23 @@ class Client():
                             time.sleep(0.5)
                         self.connection.sendall("ok".encode('utf-8')) 
                     elif message[0:5] == States.PRESSTHEBUTTON["server commands"]["listen-keypress"]:
-                        key = message[6]
-                        while True:
-                            try:
-                                if keyboard.is_pressed(key):  # if key is pressed 
-                                    self.connection.sendall("t".encode('utf-8')) 
-                                    return
-                            except:
+                        key = message[5:]
+                        timeout = 2 # seconds
+                    
+                        try:
+                            i, _, _ = select.select([sys.stdin], [], [], timeout)
+                            if i:
+                                pressed = sys.stdin.read(1)
+                                if pressed == key:
+                                    self.connection.sendall("t".encode('utf-8'))
+                                else:
+                                    self.connection.sendall("f".encode('utf-8'))
+                            else:
+                                # Timeout expired
                                 self.connection.sendall("f".encode('utf-8'))
-                                return 
+                        except Exception as e:
+                            print(f"keypress error: {e}")
+                            self.connection.sendall("f".encode('utf-8'))
                             
                     ###########################################################
 

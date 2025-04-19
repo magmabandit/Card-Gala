@@ -17,7 +17,7 @@ class PTBPlayer:
     
 # Register game on serverside & commands on clientside
 class PressTheButton(Game):
-    def __init__(self, players:list[Player], room_name):
+    def __init__(self, players, room_name):
         points = 3 # can modify this based on the size of game you want
         super().__init__(2, players, "pressthebutton", room_name)
 
@@ -36,7 +36,7 @@ class PressTheButton(Game):
     
     def handle_player_turn(self, player, server, state, barrier):
         # choose a random key on the keyboard to press
-        key_to_press = random.choice(string.ascii_letters + string.digits)
+        key_to_press = random.choice(string.ascii_lowercase + string.digits)
         server.cast(player, state["server commands"]["printing"] + f"!!! PRESS [{key_to_press}] !!!")
         # barrier.wait() # rendezous threads before listening for keypresses
         # raise KeyboardInterrupt
@@ -48,6 +48,7 @@ class PressTheButton(Game):
                 if res == "t":
                     if not self.game_over:
                         self.round_winner = player
+                        self.game_over = True
                     return
                 time.sleep(0.001)
             else: return
@@ -62,9 +63,9 @@ class PressTheButton(Game):
         for p in players:
             server.cast(p, state["server commands"]["printing"] + "--------------------------")
             server.cast(p, state["server commands"]["printing"] + f"{self.points} points needed to win!")
-        for player in players:
-            if player in self.winners:
-                print(f"{player.get_username()} - {self.winners[player]}")
+            for p1 in players:
+                if p1 in self.winners:
+                    server.cast(p, state["server commands"]["printing"] + f"{p1.get_username()} - {self.winners[p1]}")
         for p in players:
             server.cast(p, state["server commands"]["printing"] + "--------------------------")       
 
@@ -75,7 +76,8 @@ class PressTheButton(Game):
         for p in players:
             server.cast(p, state["server commands"]["printing"] +
             f"Welcome to Press the Button! Whoever gets {self.points}" 
-                " points first wins! Press 'b' to press the button first!")
+                " points first wins! Press your given button first!")          
+
         time.sleep(2)
 
         # each thread should send separate players prompt to press button under
@@ -86,7 +88,7 @@ class PressTheButton(Game):
         while self.total_winner is None:
             for p in players:
                 server.cast(p, state["server commands"]["printing"] + f"======================= \n \
-                ROUND {round}\n =======================")
+                ROUND {round}\n=======================")
             for p in players:
                 server.cast(p, state["server commands"]["countdown"] + str(random.randint(1, 6)))  
             threads = []
@@ -98,7 +100,7 @@ class PressTheButton(Game):
             for thread in threads:
                 thread.join()
             for p in players:
-                server.cast(p, state["server commands"]["countdown"] + f"End of Round - {self.round_winner.name} wins round {round}!")
+                server.cast(p, state["server commands"]["printing"] + f"End of Round - {self.round_winner.get_username()} wins round {round}!")
             # count score of round winner and determine if game is over
             if self.round_winner not in self.winners:
                 self.winners[self.round_winner] = 1
@@ -114,4 +116,6 @@ class PressTheButton(Game):
             time.sleep(1)
             self.print_curr_score(players, server, state)
             time.sleep(2)
-    
+        
+        for p in players:
+            server.cast(p, state["server commands"]["printing"] + f"!!! Game over - Congratulations, {self.total_winner.get_username()} !!!")
