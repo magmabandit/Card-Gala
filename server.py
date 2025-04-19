@@ -1,3 +1,5 @@
+### ETHAN do this
+
 import socket
 import select
 import threading
@@ -44,7 +46,6 @@ class Server:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
 
-    #TODO: clean cleanup with quit
     def run_server(self):
 
         try:

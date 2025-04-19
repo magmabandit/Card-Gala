@@ -1,4 +1,7 @@
 class States():
+    ### ALEX do this
+    
+    
     ### Server States ###
     ERROR = {
         "server commands": {
@@ -7,7 +10,6 @@ class States():
         "client responses": {}
     }
 
-    #TODO: add printing
     LOGIN = {
         "server commands": {
             "login": "login",

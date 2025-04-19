@@ -1,3 +1,5 @@
+### ETHAN do this
+
 from BJDeck import Deck
 from BJPlayer import Player
 from BJDealer import Dealer

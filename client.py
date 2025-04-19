@@ -1,3 +1,5 @@
+### ETHAN and ALEX do this
+
 import socket
 import select
 import sys
