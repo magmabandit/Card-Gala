@@ -6,7 +6,8 @@ import sys
 import tqdm
 import time
 import keyboard
-from pynput import keyboard as pynput_keyboard
+# from pynput import keyboard as pynput_keyboard
+from colorama import Fore, Back, Style
 
 from states import States
 
@@ -57,19 +58,20 @@ class Client():
 
                     elif message[0:5] == States.LOGIN["server commands"]["set username"]:
                         self.username = message[5:]
-                        print(f"Welcome {self.username}!!")
+                        print(f"{Fore.GREEN}SUCCESSFULLY LOGGED IN!\n")
+                        print(f"{Fore.WHITE}WELCOME {self.username}!")
                         self.connection.sendall("ok".encode('utf-8'))
                     
                     elif message == States.LOGIN["server commands"]["invalid login"]:
-                        print("incorrect username or password, try again")
+                        print(f"{Fore.RED}INCORRECT USERNAME USERNAME OR PASSWORD: PLEASE TRY AGAIN{Fore.WHITE}\n")
                         self.connection.sendall("ok".encode('utf-8'))
 
                     elif message == States.LOGIN["server commands"]["username used"]:
-                        print("the username you entered is owned by another player. please choose a different username")
+                        print(f"{Fore.RED}THE USERNAME YOU ENTERED IS OWNED BY ANOTHER PLAYER.\nPLEASE CHOOSE A DIFFERENT USERNAME.\n")
                         self.connection.sendall("ok".encode('utf-8'))
 
                     elif message[0:5] == States.CHOOSE_GAME["server commands"]["choose game"]:
-                        print("Choose game from the list below: ")
+                        print(f"\n{Fore.WHITE}CHOOSE A GAME FROM THE LIST BELOW: ")
                         self.choose_game(message[5:])
 
                     elif message == States.CHOOSE_GAME["server commands"]["max_game_inst"]:
@@ -181,23 +183,49 @@ class Client():
                     exit(1)
     
     def login(self):
-        print("Welcome to CARD-GALA")
+        print(f"""{Fore.WHITE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+
+                                                                                
+                                                                                
+                        {Fore.RED}__/\__                                                  
+                        {Fore.RED}\    /                                               
+                      {Fore.BLUE}XX{Fore.RED}/_  _\{Fore.BLUE}XX                                           
+                      {Fore.BLUE}XXXX{Fore.RED}\/{Fore.BLUE}XXXX      {Fore.YELLOW}XXXX                                   
+                      {Fore.BLUE}XX      XX  {Fore.YELLOW}XXXX    XXXX                                  
+                      {Fore.BLUE}XX      {Fore.YELLOW}XXXX            XXXX                              
+                      {Fore.BLUE}XX  {Fore.YELLOW}XXXX                    XXXX                          
+                      {Fore.YELLOW}XXXX        {Fore.RED}W E L C O M E       {Fore.YELLOW}XXXX                      
+                  XXXX                                    XXXX                  
+               XXX            {Fore.BLUE}T O   F A B U L O U S           {Fore.YELLOW}XXX               
+               XXX                                            XXX               
+                  XXXXX         {Fore.RED}C A R D   G A L A        {Fore.YELLOW}XXXXX                  
+                      {Fore.BLUE}XX{Fore.YELLOW}XXXX                         XXXX                       
+                      {Fore.BLUE}XX    {Fore.YELLOW}XXXX                XXXXX                           
+                      {Fore.BLUE}XX      XX{Fore.YELLOW}XXXXX      XXXXX                                
+                      {Fore.BLUE}XX      XX     {Fore.YELLOW}XXXXXX                                     
+                      {Fore.BLUE}XX      XX                                                
+                      XX      XX                                                
+                      XX      XX                                                
+                      XX      XX                                                
+                      XX      XX                                                
+{Fore.WHITE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+""")
         entered_credentials = False
         response = ""
         while not entered_credentials:
-            returning_user = input("Are you a returning user (y/n)? ")
+            returning_user = input(f"\n{Fore.WHITE}ARE YOU A RETURNING USER {Style.DIM}(y/n){Style.NORMAL}? ")
             if returning_user == "y":
-                username = input("Enter your username: ")
-                password = input("Enter your password: ")
+                username = input("\nPLEASE ENTER YOUR USERNAME: ")
+                password = input("PLEASE ENTER YOUR PASSWORD: ")
+                print(f"\n{Style.DIM}LOGGING IN...\n{Style.NORMAL}")
                 response = "exist" + username + "," + password
                 entered_credentials = True
             elif returning_user == "n":
-                username = input("Enter new username: ")
-                password = input("Enter new password: ")
+                username = input("\nENTER A NEW USERNAME: ")
+                password = input("ENTER A NEW PASSWORD: ")
+                print(f"\n{Style.DIM}CREATING ACCOUNT...\n{Style.NORMAL}")
                 response = "newpl" + username + "," + password
                 entered_credentials = True
             else:
-                print("Invalid input - try again (must enter y or n)")
+                print(f"\n{Fore.RED}INVALID INPUT - PLEASE TRY AGAIN (MUST ENTER {Style.DIM}y {Style.NORMAL}OR {Style.DIM}n{Style.DIM})")
         self.connection.sendall(response.encode('utf-8'))
             
     def choose_game(self, message):
@@ -207,7 +235,7 @@ class Client():
         can_join = False
 
         if waiting_games_str == "":
-            print("There are no games waiting to start -- create a new game")
+            print(f"\n{Style.DIM}THERE ARE NO GAMES WAITING TO START -- CREATE A NEW GAME\n{Style.NORMAL}")
         else:
             can_join = True
             # Client wants to know type of game, room name, num spots left, whos in the game
@@ -240,7 +268,7 @@ class Client():
         response = ""
         chosen_game = False
         while not chosen_game:
-            create_or_join = input("Do you want to create a new game or join an existing one? Type u to get an updated list of availible games. (c/j/u). Type q to quit the game.")
+            create_or_join = input(f"DO YOU WANT TO CREATE A NEW GAME {Style.DIM}(c){Style.NORMAL}, JOIN AN EXISTING ONE {Style.DIM}(j){Style.NORMAL},\nGET AN UPDATED LIST OF AVAILABLE GAMES {Style.DIM}(u){Style.NORMAL}, OR QUIT THE GAME {Style.DIM}(q){Style.NORMAL}? ")
             if create_or_join == "j":
                 if can_join:
                     num_rooms = len(room_names)
@@ -251,7 +279,11 @@ class Client():
                     print("No games to join - please create a new game")
                     chosen_game = False
             elif create_or_join == "c":
-                game_type = input(f"Which of the following games do you want to play: {GAMES}")
+                print("\nWHICH OF THE FOLLOWING GAMES DO YOU WANT TO PLAY?")
+                # game_type = input(f"\nWHICH OF THE FOLLOWING GAMES DO YOU WANT TO PLAY?\n")
+                for game in GAMES:
+                    print(f"{Style.DIM}- {game}{Style.NORMAL}")
+                game_type = input("\n")
                 response = "ngame" + game_type
                 chosen_game = True
             elif create_or_join == "u":
@@ -262,6 +294,7 @@ class Client():
                 chosen_game = True
             else:
                 print("Invalid input - try again (must enter c or j)")
+        # print(f"{Style.DIM}JOINING {game_type}...{Style.NORMAL}")
         self.connection.sendall(response.encode('utf-8'))
 
     def select_valid_game_num(self, num_rooms):

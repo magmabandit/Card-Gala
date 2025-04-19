@@ -5,6 +5,8 @@ from BJDealer import Dealer
 from game import Game
 from states import States
 
+from colorama import Fore, Back, Style
+
 class BJGame(Game):
     def __init__(self, players, room_name):
         # Sets max_players to 1 and game_type to blackjack
@@ -144,9 +146,9 @@ class BJGame(Game):
 
         # send welcome message(cast printing)
         server.cast(pl1, state["server commands"]["printing"] + 
-                         "Welcome to blackjack, " + 
+                         f"{Fore.GREEN}\nWELCOME TO BLACKJACK, " + 
                          pl1.get_username() + 
-                         "!!")
+                         f"!\n{Fore.WHITE}")
         
         name = pl1.get_username()
         self.player.Make_name(name)

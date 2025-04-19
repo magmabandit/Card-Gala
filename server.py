@@ -15,6 +15,8 @@ from CrazyEight import CrazyEight
 
 from PTBGame import PressTheButton
 
+from colorama import Fore, Back, Style
+
 PORT = 9998
 MAX_GAME_INSTANCES = 4
 GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PressTheButton,
@@ -269,8 +271,9 @@ class Server:
         # This increments the value of registered_games if doing so creates a valid num of game instances
         # This is all done with the lock
         if game_type_str not in GAMES.keys():
-            self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] +
-                              "You didn't enter a valid game type, try again")
+            err = f"{Fore.RED}YOU DIDN'T ENTER A VALID GAME TYPE. PLEASE TRY AGAIN.{Fore.RESET}"
+            self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] + err)
+            # "YOU DIDN'T ENTER A VALID GAME TYPE. PLEASE TRY AGAIN.")
             return False
 
         val = self.registered_games.increment_if_less_x(game_type_str, MAX_GAME_INSTANCES)
