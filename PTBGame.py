@@ -1,4 +1,6 @@
 ### ALEX do this
+# PTBGame.py
+# class + game logic for Press The Button
 
 # Client-compatible press-the-button
 import threading
@@ -11,6 +13,9 @@ from states import States
 from player import Player
 
 class PTBPlayer:
+    """
+    Local player definition for printing + debug purposes
+    """
     def __init__(self, name):
         self.name = name
 
@@ -37,6 +42,11 @@ class PressTheButton(Game):
         self.total_winner = None
     
     def handle_player_turn(self, player, server, state, barrier):
+        """
+        Handles game logic for an individual player during a given round.
+        Return: None
+        """
+
         # choose a random key on the keyboard to press
         key_to_press = random.choice(string.ascii_lowercase + string.digits)
         server.cast(player, state["server commands"]["printing"] + f"!!! PRESS [{key_to_press}] !!!")
@@ -55,13 +65,20 @@ class PressTheButton(Game):
                 time.sleep(0.001)
             else: return
 
-    # resets round-based game vars for continued use
-    # game_over, round_winner
+
     def reset_game(self):
+        """
+        resets round-based game vars for continued use
+        Note: veriables reset: game_over, round_winner
+        """
         self.game_over = False
         self.round_winner = None
 
     def print_curr_score(self, players:list[Player], server, state):
+        """
+        Given list of current players, casts a round + scoreboard message to all
+        players.
+        """
         for p in players:
             server.cast(p, state["server commands"]["printing"] + "--------------------------")
             server.cast(p, state["server commands"]["printing"] + f"{self.points} points needed to win!")
@@ -73,6 +90,10 @@ class PressTheButton(Game):
 
 
     def run(self, server, players):
+        """
+        Given server object and list of active players,
+        executes PTB Game logic.
+        """
         state = States.PRESSTHEBUTTON
          
         for p in players:

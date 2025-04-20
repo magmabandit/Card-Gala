@@ -1,5 +1,9 @@
+# states.py
+
 class States():
-    ### ALEX do this
+    """
+    Suite for Server/Game state messages to be sent between server and client
+    """
     
     
     ### Server States ###

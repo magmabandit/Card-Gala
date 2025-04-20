@@ -1,4 +1,6 @@
 ### ALEX do this
+# game.py
+# superclass definition for implementable games in Card-GALA
 
 from player import Player
 from abc import ABC, abstractmethod

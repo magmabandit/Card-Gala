@@ -1,4 +1,7 @@
-### ETHAN and ALEX do this
+# client.py
+# implementation of client-side logic for login, joining games, and in-game
+# commands 
+
 
 import socket
 import select
@@ -8,7 +11,7 @@ import sys
 import tqdm
 import time
 import keyboard
-# from pynput import keyboard as pynput_keyboard
+
 from colorama import Fore, Back, Style
 
 from states import States
@@ -21,7 +24,14 @@ GAMES = ["blackjack", "blackjack2player", "crazy8", "pressthebutton"]
 MAX_GAME_INSTANCES = 4
 
 class Client():
-
+    """
+    
+    hostname: hostname IP of server
+    connection: socket object to communicate to server
+    username: str type name of user
+    DEBUG: flag for print statements
+    
+    """
     def __init__(self, hostname, debug):
         self.hostname = hostname
         self.connection = None
@@ -29,6 +39,10 @@ class Client():
         self.DEBUG = debug # debug flag
 
     def connect_to_server(self):
+        """
+        attempts to connect to server using given hostname. Upon success, sets
+        client connection to newly retrieved socket object
+        """
         if self.DEBUG:
             print("connecting...", file=sys.stderr)
         conn_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -39,6 +53,10 @@ class Client():
         self.connection = conn_sock
 
     def run_client(self):
+        """
+        State in which the client may recieve/send messages to the server.
+        Includes game specific commands.
+        """
         while True:
             if self.DEBUG:
                 print("waiting for input", file=sys.stderr)
@@ -185,6 +203,9 @@ class Client():
                     exit(1)
     
     def login(self):
+        """
+        Display and logic for new user account creation and returning user login
+        """
         print(f"""{Fore.WHITE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+
                                                                                 
                                                                                 
