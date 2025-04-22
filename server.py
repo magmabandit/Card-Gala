@@ -289,11 +289,11 @@ class Server:
             self.waiting_game_rooms.remove(game)
             for pl in game.get_players():
                 self.idle_players.remove(pl)
-            p = threading.Thread(target=game.run, args=[self, game.get_players()])
-            p.start()
+            t = threading.Thread(target=game.run, args=[self, game.get_players()])
+            t.start()
 
-            # Collect result of multiprocessing on game finish
-            p.join()
+            # Collect result of threading on game finish
+            t.join()
 
             # Clean up game
             old_game_players = game.get_players()
@@ -358,14 +358,14 @@ class Server:
             self.logger.debug("starting game")
             for pl in new_game.get_players():
                 self.idle_players.remove(pl)
-            p = Process(
+            t = threading.Thread(
                 target=new_game.run, 
                 args=[self, new_game.get_players()]
             )
-            p.start()
+            t.start()
 
-            # Collect result of multiprocessing on game finish
-            p.join()
+            # Collect result of threading on game finish
+            t.join()
 
             # Clean up game
             self.logger.debug("Cleaning up game")
@@ -423,19 +423,25 @@ class Server:
     def remove_player(self, player):
         """ Remove player from server """
         self.logger.debug("Removing player")
-        if player in self.idle_players:
-            self.idle_players.remove(player)
-
-            if player.is_in_game():
-                game = player.get_game()
-                game.remove_player(player)
+        if player.is_in_game():
+            game = player.get_game()
+            game.remove_player(player)
+            if game in self.waiting_game_rooms:
                 self.waiting_game_rooms.update(
                     game, 
                     self.waiting_game_rooms.get(game) - 1
                 )
                 if self.waiting_game_rooms.get(game) == 0:
                     self.logger.debug("Game removed")
-                    self.waiting_game_rooms.remove(game)                     
+                    self.waiting_game_rooms.remove(game)  
+            else:
+                #TODO: send message to other players - a player disconnected...
+                for player in game.get_players():
+                    message = "\n{Fore.RED}ONE OF THE OTHER PLAYERS DISCONNECTED. GAME OVER.{Fore.RESET}"
+                    self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] + message)
+
+        if player in self.idle_players:
+            self.idle_players.remove(player)                   
 
         player.get_connection().close()
         self.logger.debug("Done removing player")
