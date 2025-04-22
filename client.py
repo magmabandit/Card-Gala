@@ -13,6 +13,7 @@ import time
 import keyboard
 
 from colorama import Fore, Back, Style
+from ascii_art import art
 
 from states import States
 
@@ -68,7 +69,7 @@ class Client():
             if self.DEBUG:
                 print("doing stuff...", file=sys.stderr)
             for sock in ready_read:
-                message = sock.recv(1024).decode('utf-8')
+                message = sock.recv(1024).decode('utf-8', 'ignore')
                 if message:
                     if message == States.LOGIN["server commands"]["login"]:
                         if self.DEBUG:
@@ -95,16 +96,16 @@ class Client():
                         self.choose_game(message[5:])
 
                     elif message == States.CHOOSE_GAME["server commands"]["max_game_inst"]:
-                        print(f"There can only be {MAX_GAME_INSTANCES} games of the same type running at the same time. \
-                              Please join an existing game or choose a different type of game to play.")
+                        print(f"THERE CAN ONLY BE {MAX_GAME_INSTANCES} GAMES OF THE SAME TYPE RUNNING AT THE SAME TIME.\n \
+                              PLEASE JOIN AN EXISTING GAME OR CHOOSE A DIFFERENT TYPE OF GAME TO PLAY.")
                         self.connection.sendall("ok".encode('utf-8'))   
 
                     elif message == States.CHOOSE_GAME["server commands"]["room_filled"]:
-                        print("The room filled up before you got in. Please try again.")
+                        print("THE ROOM FILLED UP BEFORE YOU GOT IN. PLEASE TRY AGAIN.")
                         self.connection.sendall("ok".encode('utf-8'))  
 
                     elif message == States.CHOOSE_GAME["server commands"]["waiting for players"]:
-                        print("Waiting for players to join the game...")
+                        print("WAITING FOR PLAYERS TO JOIN THE GAME...")
                         self.connection.sendall("ok".encode('utf-8')) 
 
                     elif message[0:5] == States.CHOOSE_GAME["server commands"]["printing"]:
@@ -120,33 +121,40 @@ class Client():
                     elif message == States.BLACKJACK["server commands"]["enter money"]:
                         self.enter_money()
                     elif message == States.BLACKJACK["server commands"]["rank"]:
-                        value = input("Enter rank of card: EX. A, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K: ")
+                        value = input("ENTER RANK OF CARD. FOR EXAMPLE: A, 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K. ")
                         self.connection.sendall(value.encode('utf-8'))
                     elif message == States.BLACKJACK["server commands"]["suit"]:
-                        value = input("Enter suit of card: Hearts, Diamonds, Clubs, Spades:")
+                        value = input("ENTER SUIT OF CARD: Hearts, Diamonds, Clubs, Spades. ")
                         self.connection.sendall(value.encode('utf-8'))
                     elif message == States.BLACKJACK["server commands"]["suit_change"]:
-                        value = input("Enter suit the top card will be: Hearts, Diamonds, Clubs, Spades:")
+                        value = input("ENTER SUIT OF THE TOP CARD: Hearts, Diamonds, Clubs, Spades. ")
                         self.connection.sendall(value.encode('utf-8'))
                     elif message[0:5] == States.BLACKJACK["server commands"]["place bet"]:
                         self.place_bet(message[5:])
 
                     elif message[0:5] == States.BLACKJACK["server commands"]["Player-choice"]:
-                        move = input("Do you want to (H)it or (S)tand? ").lower()
+                        move = input(f"\nDO YOU WANT TO HIT {Style.DIM}(H){Style.NORMAL} OR STAND {Style.DIM}(S){Style.NORMAL}? ").lower()
                         self.connection.sendall(move.encode('utf-8')) 
                     
                     elif message[0:5] == States.BLACKJACK["server commands"]["Player-choice2"]:
-                        game_check = input("Play again? (Y/N): ").lower()
+                        game_check = input("PLAY AGAIN (Y/N)? ").lower()
                         self.connection.sendall(game_check.encode('utf-8')) 
 
                     elif message[0:5] == States.BLACKJACK["server commands"]["intial hand"]:
                         hand = message[5:]
                         hand_msgs = hand.split(",")
-                        print(f"\nYour Hand: {hand_msgs[0]}")
-                        print(f"Hand Value: {hand_msgs[1]}")
-                        print(f"Dealer's First Card: {hand_msgs[2]}")
-                        print(f"Dealer's Hand Value: {hand_msgs[3]}")
-                        print("It is your turn")
+                        your_cards = hand_msgs[0].split()
+                        # print(your_cards)
+                        # print(hand_msgs)
+                        # print("HERE????", art[your_cards[0]], art[your_cards[1]])
+                        print("\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-")
+                        print(f"\nYOUR HAND: {art[your_cards[0]]}, {art[your_cards[1]]}")
+                        print(f"YOUR HAND VALUE: {hand_msgs[1]}\n")
+                        # print(art[your_cards[0]], art[your_cards[1]])
+                        print(f"DEALER'S FIRST CARD: {art[hand_msgs[2]]}")
+                        # print(art[hand_msgs[2]])
+                        print(f"DEALER'S HAND VALUE: \b{hand_msgs[3]} 🂠")
+                        print("IT IS YOUR TURN!")
 
                         self.connection.sendall("ok".encode('utf-8')) 
 
@@ -180,7 +188,7 @@ class Client():
                     ###########################################################
 
                     elif message == States.END["server commands"]["end"]:
-                        print("Thank you for playing CARD-GALA, goodbye!")
+                        print("THANK YOU FOR PLAYING CARD-GALA, GOODBYE!")
                         self.connection.sendall("ok".encode('utf-8'))  
                         sock.close()
                         exit(0)
@@ -233,6 +241,8 @@ class Client():
 {Fore.WHITE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+""")
         entered_credentials = False
         response = ""
+        # for a in art:
+        #     print(art[a])
         while not entered_credentials:
             returning_user = input(f"\n{Fore.WHITE}ARE YOU A RETURNING USER {Style.DIM}(y/n){Style.NORMAL}? ")
             if returning_user == "y":
@@ -291,7 +301,7 @@ class Client():
         response = ""
         chosen_game = False
         while not chosen_game:
-            create_or_join = input(f"DO YOU WANT TO CREATE A NEW GAME {Style.DIM}(c){Style.NORMAL}, JOIN AN EXISTING ONE {Style.DIM}(j){Style.NORMAL},\nGET AN UPDATED LIST OF AVAILABLE GAMES {Style.DIM}(u){Style.NORMAL}, OR QUIT THE GAME {Style.DIM}(q){Style.NORMAL}? ")
+            create_or_join = input(f"{Fore.WHITE}DO YOU WANT TO CREATE A NEW GAME {Style.DIM}(c){Style.NORMAL}, JOIN AN EXISTING ONE {Style.DIM}(j){Style.NORMAL},\nGET AN UPDATED LIST OF AVAILABLE GAMES {Style.DIM}(u){Style.NORMAL}, OR QUIT THE GAME {Style.DIM}(q){Style.NORMAL}? ")
             if create_or_join == "j":
                 if can_join:
                     num_rooms = len(room_names)
@@ -299,7 +309,7 @@ class Client():
                     response = "egame" + str(room_names[int(chosen_game_num) - 1])
                     chosen_game = True
                 else:
-                    print("No games to join - please create a new game")
+                    print(f"{Fore.RED}\nNO GAMES TO JOIN. PLEASE CREATE A NEW GAME.\n{Fore.WHITE}")
                     chosen_game = False
             elif create_or_join == "c":
                 print("\nWHICH OF THE FOLLOWING GAMES DO YOU WANT TO PLAY?")
@@ -316,7 +326,9 @@ class Client():
                 response = "quitg"
                 chosen_game = True
             else:
-                print("Invalid input - try again (must enter c or j)")
+                # print(f"\n{Fore.RED}INVALID INPUT. THERE ARE  (c or j){Fore.WHITE}{Style.DIM}(MUST ENTER c OR j){Style.NORMAL}\n{Fore.RESET}")
+                print(f"\n{Fore.RED}INVALID INPUT. PLEASE TRY AGAIN.\n{Fore.WHITE}")
+
         # print(f"{Style.DIM}JOINING {game_type}...{Style.NORMAL}")
         self.connection.sendall(response.encode('utf-8'))
 
@@ -333,7 +345,7 @@ class Client():
     def enter_money(self):
         entered_money = False
         while not entered_money:
-            value = input("Enter the amount of money you want to start with: ")
+            value = input("ENTER THE AMOUNT OF MONEY YOU WANT TO START WITH: ")
             if value.isdigit() and float(value) > 0:
                 self.connection.sendall(value.encode('utf-8'))
                 entered_money = True
@@ -342,15 +354,16 @@ class Client():
                 + "back when you have actual money.")
     
     def place_bet(self, money):
-        print(f"You have ${money}")
+        print(f"\nYOU HAVE ${money}")
         placed_bet = False
         while not placed_bet:
-            bet = input("Enter your bet: ")
+            bet = input("ENTER YOUR BET: ")
             if bet.isdigit() and float(bet) > 0 and float(bet) <= float(money):
+                # print("bet: ", bet)
                 self.connection.sendall(bet.encode('utf-8'))
                 placed_bet = True                
             else:
-                print("You did not enter a valid bet. Bet must be > $0 and within your available money")
+                print(f"\n{Fore.RED}YOU DID NOT ENTER A VALID BET.\nYOUR BET MUST BE GREATER THAN $0 AND WITHIN YOUR AVAILABLE AMOUNT OF MONEY\n{Fore.WHITE}")
 
     #####################
 

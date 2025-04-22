@@ -9,7 +9,7 @@ class Card:
         if self.rank == "A":
             return 11
         elif self.rank == "J" or self.rank == "Q" or self.rank == "K":
-            return 10
+            return 10 
         else:
             return int(self.rank)
     def get_suit(self):

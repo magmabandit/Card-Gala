@@ -8,6 +8,7 @@ from game import Game
 from states import States
 
 from colorama import Fore, Back, Style
+from ascii_art import art
 
 class BJGame(Game):
     def __init__(self, players, room_name):
@@ -56,16 +57,25 @@ class BJGame(Game):
         """Handles the player's hitting or standing."""
 
         while True:
+            theHand = self.player.Show_hand().split()
+            string_hand = ""
+            for h in theHand[:-1]:
+                string_hand += art[h] + ", "
+
+            string_hand += art[theHand[-1]]
+            
+            # print("here", theHand)
             server.cast(player, state["server commands"]["printing"] + 
-                                "\nYour Hand: " + self.player.Show_hand())
+                                "\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-\n\nYOUR HAND: " + string_hand)
+            # print(art[theHand[0]], art[theHand[1]])
             server.cast(player, state["server commands"]["printing"] + 
-                                "\nHand Value: " + 
+                                "YOUR HAND VALUE: " + 
                                 str(self.player.Get_hand().get_value()))
 
         
             if self.player.Get_hand().get_value() > 21:
                 server.cast(player, state["server commands"]["printing"] + 
-                                    "You busted")
+                                    f"\n{Fore.RED}YOU BUSTED{Fore.WHITE}")
                 return False
             move = server.call(player, 
                                state["server commands"]["Player-choice"])
@@ -153,10 +163,12 @@ class BJGame(Game):
         pl1 = players[0]
 
         # send welcome message(cast printing)
-        server.cast(pl1, state["server commands"]["printing"] + 
-                         f"{Fore.GREEN}\nWELCOME TO BLACKJACK, " + 
-                         pl1.get_username() + 
-                         f"!\n{Fore.WHITE}")
+        welcome = f"""{Fore.BLUE}\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-
+                                                                             
+                 {Fore.BLUE}W E L C O M E   T O   B L A C K J A C K                     
+                                                                             
+{Fore.BLUE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-\n{Fore.WHITE}"""
+        server.cast(pl1, state["server commands"]["printing"] + welcome)
         
         name = pl1.get_username()
         self.player.Make_name(name)

@@ -272,7 +272,7 @@ class Server:
         # This increments the value of registered_games if doing so creates a valid num of game instances
         # This is all done with the lock
         if game_type_str not in GAMES.keys():
-            err = f"{Fore.RED}YOU DIDN'T ENTER A VALID GAME TYPE. PLEASE TRY AGAIN.{Fore.RESET}"
+            err = f"\n{Fore.RED}{game_type_str} IS NOT A VALID GAME TYPE. PLEASE TRY AGAIN.{Fore.RESET}"
             self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] + err)
             # "YOU DIDN'T ENTER A VALID GAME TYPE. PLEASE TRY AGAIN.")
             return False
