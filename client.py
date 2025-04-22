@@ -111,6 +111,10 @@ class Client():
                     elif message[0:5] == States.CHOOSE_GAME["server commands"]["printing"]:
                         print(message[5:])
                         self.connection.sendall("ok".encode('utf-8')) 
+
+                    elif message[0:5] == States.CHOOSE_GAME["server commands"]["printing over"]:
+                        print(message[5:], end="\r")
+                        self.connection.sendall("ok".encode('utf-8')) 
                     
                     ### Blackjack specific stuff ###
                     

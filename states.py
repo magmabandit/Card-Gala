@@ -33,6 +33,7 @@ class States():
             "room_filled": "froom",
             "waiting for players": "wplay",
             "printing": "print",
+            "printing over": "prino",
         },
         "client responses": {
             "choose game": ["egame", "ngame", "updat", "quitg"]

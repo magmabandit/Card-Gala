@@ -45,10 +45,6 @@ class Game(ABC):
         """
         self.players.remove(player)
     
-    #TODO: haven't implemented this function
-    def leave_game():
-        return
-    
     ### Getters for game class variables ###
 
     def get_max_players(self):

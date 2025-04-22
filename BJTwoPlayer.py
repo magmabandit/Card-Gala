@@ -11,6 +11,8 @@ from BJDealer import Dealer
 from game import Game
 from states import States
 
+from colorama import Fore, Back, Style
+
 class BJ2Player(Game):
     """ Initializes a 2-player Blackjack game. 
         Args:
@@ -264,6 +266,9 @@ class BJ2Player(Game):
         
     def welcome_add_money(self, server, pl1, state, player1):
         # send welcome message(cast printing)
+        message = f"{Fore.GREEN}Waiting for players to join. {self.get_num_players()}/{self.get_max_players()} joined{Fore.RESET}"
+        server.cast(pl1, state["server commands"]["printing"] +
+                    message)
         server.cast(pl1, state["server commands"]["printing"] 
                     + "Welcome to blackjack, " + pl1.get_username() + "!!")
         name = pl1.get_username()

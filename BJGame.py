@@ -35,7 +35,7 @@ class BJGame(Game):
         if bet == None:
             exit(0)
         self.player.Make_bet(int(bet))
-        return bet
+        return int(bet)
             
     
     # deals the initial cards to the player and the dealer: Keeps dealers
@@ -163,6 +163,9 @@ class BJGame(Game):
         pl1 = players[0]
 
         # send welcome message(cast printing)
+        message = f"{Fore.GREEN}Waiting for players to join. {self.get_num_players()}/{self.get_max_players()} joined{Fore.RESET}"
+        server.cast(pl1, state["server commands"]["printing"] +
+                    message)
         welcome = f"""{Fore.BLUE}\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-
                                                                              
                  {Fore.BLUE}W E L C O M E   T O   B L A C K J A C K                     

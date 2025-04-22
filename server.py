@@ -4,6 +4,7 @@ import socket
 import select
 import threading
 import logging
+import time
 from multiprocessing import Process
 
 from player import Player
@@ -48,6 +49,9 @@ class Server:
 
     def run_server(self):
 
+        waiting_games_thread = threading.Thread(target=self.send_waiting_players_update, args = [])
+        waiting_games_thread.start()
+
         try:
             while True:
                 # When a new client attempts to connect, accept the connection
@@ -73,6 +77,7 @@ class Server:
         finally:
             for thread in self.player_threads:
                 thread.join()
+            waiting_games_thread.join()
     
     def host_player(self, player):
         if self.handle_login(player) == ERROR:
@@ -152,7 +157,6 @@ class Server:
         self.logger.debug("Message sent")
      
         (ready_read, _, _) = select.select([connection], [], [])
-        print ("recieved response")
         data = connection.recv(1024)
         if data != b'': # Recieved response from client
             response = data.decode('utf-8')
@@ -171,7 +175,6 @@ class Server:
         connection.sendall(message.encode('utf-8'))
 
         (ready_read, _, _) = select.select([connection], [], [])
-        print ("recieved response")
         data = connection.recv(1024)
         if data != b'': # Recieved response from client
             response = data.decode('utf-8')
@@ -229,6 +232,8 @@ class Server:
             self.cast(player, States.CHOOSE_GAME["server commands"]["room_filled"])
             return False
         game.add_player(player)
+        player.set_in_game(True)
+        player.set_game(game)
         
         if game.get_max_players() == game.get_num_players():
             # start game
@@ -236,8 +241,6 @@ class Server:
             self.waiting_game_rooms.remove(game)
             for pl in game.get_players():
                 self.idle_players.remove(pl)
-                pl.set_in_game(True)
-                pl.set_game(game)
             p = Process(target=game.run, args=[self, game.get_players()])
             p.start()
 
@@ -284,14 +287,14 @@ class Server:
         player_list = LockedList()
         player_list.append(player)
         new_game = GAMES[game_type_str](players=player_list, room_name= f"{game_type_str}{val}")
+        player.set_in_game(True)
+        player.set_game(new_game)
         
         if new_game.get_max_players() == 1:
             # start game
             self.logger.debug("starting game")
             for pl in new_game.get_players():
                 self.idle_players.remove(pl)
-                pl.set_in_game(True)
-                pl.set_game(new_game)
             p = Process(target=new_game.run, args=[self, new_game.get_players()])
             p.start()
 
@@ -323,7 +326,6 @@ class Server:
             # update waiting_game_rooms
             self.waiting_game_rooms.update(new_game, 1)
             self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
-            #TODO: while not game started cast num players...
             return True
         
     def client_quit(self, player):
@@ -344,6 +346,7 @@ class Server:
         return True
     
     def remove_player(self, player):
+        self.logger.debug("Removing player")
         if player in self.idle_players:
             self.idle_players.remove(player)
 
@@ -352,6 +355,19 @@ class Server:
                 game.remove_player(player)
                 self.waiting_game_rooms.update(game, self.waiting_game_rooms.get(game) - 1)
                 if self.waiting_game_rooms.get(game) == 0:
-                    self.waiting_game_rooms.remove(game)                       
+                    self.logger.debug("Game removed")
+                    self.waiting_game_rooms.remove(game)                     
 
         player.get_connection().close()
+        self.logger.debug("Done removing player")
+
+    def send_waiting_players_update(self):
+        while True:
+            for game in self.waiting_game_rooms.get_dict().copy():
+                num_players = game.get_num_players()
+                max_players = game.get_max_players()
+                for player in game.get_players():
+                    message = f"\r{Fore.GREEN}Waiting for players to join. {num_players}/{max_players} joined{Fore.RESET}"
+                    self.cast(player, States.CHOOSE_GAME["server commands"]["printing over"] +
+                                message)
+            time.sleep(1)
