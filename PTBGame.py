@@ -56,6 +56,8 @@ class PressTheButton(Game):
             if not self.game_over:
                 # checks if client pressed the right key on the keyboard
                 res = server.call(player, state["server commands"]["listen-keypress"] + key_to_press)
+                if res == None:
+                    exit(0)
                     # client presses correct key
                 if res == "t":
                     if not self.game_over:

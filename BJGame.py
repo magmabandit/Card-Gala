@@ -29,9 +29,11 @@ class BJGame(Game):
     def place_bet(self, server, state, player):
         """Handles betting before the round starts."""
        
-        bet = int(server.call(player, state["server commands"]["place bet"] +
-                  str(self.player.Get_money())))
-        self.player.Make_bet(bet)
+        bet = server.call(player, state["server commands"]["place bet"] +
+                  str(self.player.Get_money()))
+        if bet == None:
+            exit(0)
+        self.player.Make_bet(int(bet))
         return bet
             
     
@@ -67,6 +69,8 @@ class BJGame(Game):
                 return False
             move = server.call(player, 
                                state["server commands"]["Player-choice"])
+            if move == None:
+                exit(0)
             if move == "h":
                 self.player.Hit(self.deck.deal_card())
             elif move == "s":
@@ -132,6 +136,8 @@ class BJGame(Game):
                             str(self.player.Get_money()))
         Game_check = server.call(player, 
                                  state["server commands"]["Player-choice2"])
+        if Game_check == None:
+            exit(0)
         if Game_check == "y":
             self.player.clear_hand()
             self.dealer.clear_hand()
@@ -157,6 +163,8 @@ class BJGame(Game):
 
         # call(needs something to return)
         money = server.call(pl1, state["server commands"]["enter money"])
+        if money == None:
+            exit(0)
         self.player.add_money(int(money))
 
         self.play_round(server, state, pl1)

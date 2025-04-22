@@ -91,6 +91,8 @@ class BJ2Player(Game):
                 return False
 
             move = server.call(current_player, state["server commands"]["Player-choice"])
+            if move == None:
+                exit(0)
             if move == "h":  # Hit
                 current_player_game.Hit(self.deck.deal_card())
                 server.cast(current_player, state["server commands"]["printing"] + "\nYour new hand: " + current_player_game.Show_hand())
@@ -144,12 +146,14 @@ class BJ2Player(Game):
             server.cast(player, state["server commands"]["printing"] + "Dealer wins!")
 
     def place_player_bet(self, server, pl, state, player):
-        bet = int(server.call(pl, state["server commands"]["place bet"] + str(player.Get_money())))
+        bet = server.call(pl, state["server commands"]["place bet"] + str(player.Get_money()))
+        if bet == None:
+            exit(0)
         if player == self.players_logic[0]:
-            self.bet1 = bet
+            self.bet1 = int(bet)
         else:
-            self.bet2 = bet
-        player.Make_bet(bet)
+            self.bet2 = int(bet)
+        player.Make_bet(int(bet))
 
     def play_round(self, server, state, pl1, pl2):
         """Runs a full round of Blackjack."""
@@ -195,6 +199,8 @@ class BJ2Player(Game):
 
         Game_check1 = server.call(pl1, state["server commands"]["Player-choice2"])
         Game_check2 = server.call(pl2, state["server commands"]["Player-choice2"])
+        if Game_check1 == None or Game_check2 == None:
+            exit(0)
 
         if Game_check1 == "y" and Game_check2 == "y":
             self.players_logic[0].clear_hand()
@@ -213,6 +219,8 @@ class BJ2Player(Game):
 
         # call(needs something to return)
         money = server.call(pl1, state["server commands"]["enter money"])
+        if money == None:
+            exit(0)
         player1.add_money(int(money))
 
     def run(self, server, players):

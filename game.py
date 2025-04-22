@@ -38,6 +38,13 @@ class Game(ABC):
         """
         self.players.append(player)
     
+    def remove_player(self, player):
+        """
+        removed a player object to the players LockedList
+        Returns: None
+        """
+        self.players.remove(player)
+    
     #TODO: haven't implemented this function
     def leave_game():
         return

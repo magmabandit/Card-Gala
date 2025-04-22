@@ -60,6 +60,8 @@ class CrazyEight(Game):
             while not_played_card:
                 suit = server.call(player_cast, state["server commands"]["suit"])
                 rank = server.call(player_cast, state["server commands"]["rank"])
+                if suit == None or rank == None:
+                    exit(0)
                 card = Card(rank, suit)
                 test_card = card.__str__()
                 for cards in playable_cards:
@@ -68,6 +70,8 @@ class CrazyEight(Game):
                         self.discard_pile.append(self.top_card)
                         if card.rank == "8":
                             new_suit = server.call(player_cast, state["server commands"]["suit_change"])
+                            if new_suit == None:
+                                exit(0)
                             self.top_card = Card("8", new_suit)
                         else:
                             self.top_card = card

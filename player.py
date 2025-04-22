@@ -19,6 +19,7 @@ class Player():
         self.username = ""
         self.connection = connection
         self.in_game = False
+        self.game = None
 
     # Getters and setters for player class variables
 
@@ -28,6 +29,9 @@ class Player():
     def get_connection(self):
         return self.connection
     
+    def get_game(self):
+        return self.game
+    
     def is_in_game(self):
         return self.in_game
     
@@ -36,6 +40,9 @@ class Player():
     
     def set_connection(self, connection: socket.socket):
         self.connection = connection
+
+    def set_game(self, game):
+        self.game = game
     
     def set_in_game(self, in_game: bool):
         self.in_game = in_game

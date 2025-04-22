@@ -160,8 +160,7 @@ class Server:
             return response
         else: # Client has disconnected
             self.logger.debug("Client disconnected")
-            self.idle_players.remove(player)
-            connection.close()
+            self.remove_player(player)
 
     # Expects response 'ok'
     # Block until 'ok' response in order to enforce order of communication with client
@@ -178,12 +177,10 @@ class Server:
             response = data.decode('utf-8')
             if response != "ok":
                 connection.sendall(States.ERROR["error"])
-                self.idle_players.remove(player)
-                connection.close()
+                self.remove_player(player)
         else: # Client has disconnected
             self.logger.debug("Client disconnected")
-            self.idle_players.remove(player)
-            connection.close()
+            self.remove_player(player)
 
     ### LOGIN STATE ###
     def new_player(self, new_player, username, password):
@@ -211,8 +208,7 @@ class Server:
         self.logger.debug(f"Login type: {login_type}")
 
         self.cast(new_player, States.ERROR["error"])
-        self.idle_players.remove(new_player)
-        new_player.get_connection().close()
+        self.remove_player(new_player)
         return True
 
     ### CHOOSE_GAME STATE ###
@@ -239,7 +235,9 @@ class Server:
             self.logger.debug("starting game")
             self.waiting_game_rooms.remove(game)
             for pl in game.get_players():
-                self.idle_players.remove(pl) 
+                self.idle_players.remove(pl)
+                pl.set_in_game(True)
+                pl.set_game(game)
             p = Process(target=game.run, args=[self, game.get_players()])
             p.start()
 
@@ -250,7 +248,9 @@ class Server:
             old_game_players = game.get_players()
             self.registered_games.decrement(game.get_game_type())
             for pl in old_game_players:
-                self.idle_players.append(pl) 
+                self.idle_players.append(pl)
+                pl.set_in_game(False)
+                pl.set_game(None)
 
                 # create and start new threads for all players to choose game again
                 if pl != player:
@@ -283,14 +283,15 @@ class Server:
             return False
         player_list = LockedList()
         player_list.append(player)
-        self.logger.debug("HAHA!!!", str(type(player_list)))
         new_game = GAMES[game_type_str](players=player_list, room_name= f"{game_type_str}{val}")
         
         if new_game.get_max_players() == 1:
             # start game
             self.logger.debug("starting game")
             for pl in new_game.get_players():
-                self.idle_players.remove(pl) 
+                self.idle_players.remove(pl)
+                pl.set_in_game(True)
+                pl.set_game(new_game)
             p = Process(target=new_game.run, args=[self, new_game.get_players()])
             p.start()
 
@@ -303,7 +304,9 @@ class Server:
             self.registered_games.decrement(new_game.get_game_type())
             for pl in old_game_players:
                 self.logger.debug("In loop")
-                self.idle_players.append(pl) 
+                self.idle_players.append(pl)
+                pl.set_in_game(False)
+                pl.set_game(None)
 
                 # create and start new threads for all players to choose game again
                 if pl != player:
@@ -320,13 +323,13 @@ class Server:
             # update waiting_game_rooms
             self.waiting_game_rooms.update(new_game, 1)
             self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
+            #TODO: while not game started cast num players...
             return True
         
     def client_quit(self, player):
         state = States.END
         self.cast(player, state["server commands"]["end"])
-        self.idle_players.remove(player)
-        player.get_connection().close()
+        self.remove_player(player)
         return True
         
     def choose_game_error(self, choose_game_type, new_player):
@@ -337,6 +340,18 @@ class Server:
         self.logger.debug(f"Choose game type: {choose_game_type}")
 
         self.cast(new_player, States.ERROR["error"])
-        self.idle_players.remove(new_player)
-        new_player.get_connection().close()
+        self.remove_player(new_player)
         return True
+    
+    def remove_player(self, player):
+        if player in self.idle_players:
+            self.idle_players.remove(player)
+
+            if player.is_in_game():
+                game = player.get_game()
+                game.remove_player(player)
+                self.waiting_game_rooms.update(game, self.waiting_game_rooms.get(game) - 1)
+                if self.waiting_game_rooms.get(game) == 0:
+                    self.waiting_game_rooms.remove(game)                       
+
+        player.get_connection().close()
