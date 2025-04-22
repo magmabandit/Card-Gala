@@ -1,5 +1,9 @@
 ### ABDI do this
-
+# CrazyEight.py
+# A two-player implementation of the Crazy Eight card game. 
+# Players take turns playing valid cards that match either suit or
+# rank with the top card, drawing if necessary.
+# First player to discard all cards wins
 from CrazyEightHand import Hand
 from BJCard import Card
 from BJDeck import Deck
@@ -8,6 +12,10 @@ from states import States
 from CrazyEightPlayer import Player
 class CrazyEight(Game):
     def __init__(self, players, room_name):
+        """Initializes Crazy Eight game with two players and a deck of cards.
+                Args: 
+                        players: The list of players in the game.
+                        room_name: The name of the game room."""
         super().__init__(2, players, "crazy8", room_name)
         self.deck = Deck()
         self.deck.shuffle()
@@ -18,6 +26,12 @@ class CrazyEight(Game):
 
 
     def deal_initial_cards(self, server, state, pl1, pl2):
+        """Deals the initial cards to the players.
+            Args: 
+                server: The server object to send messages to the players.
+                state: The game state.
+                pl1: The first player object.
+                pl2: The second player object."""
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
         for _ in range(7):
@@ -29,8 +43,16 @@ class CrazyEight(Game):
         server.cast(pl2, state["server commands"]["printing"] +
         "Your Hand: " +
         player2.show_hand() + "\n")
-        
+
     def every_turn(self, server, state, pl1, pl2, player1, player2):
+        """Handles the game loop for each player's turn.
+                Args:
+                        server: The server to send messages to the players.
+                        state: The game state.
+                        pl1: The first player client.
+                        pl2: The second player client.
+                        player1: The logic object for the first player.
+                        player2: The logic object for the second player."""
         current_turn = 0
         players = [pl1, pl2]
         logic = [player1, player2]
@@ -92,8 +114,6 @@ class CrazyEight(Game):
                     server.cast(player_cast,
                                     state["server commands"]["printing"] 
                                         + "Invalid card. Please try again.\n")
-
-        
         # Check win
             if player_game.has_won():
                 server.cast(player_cast, state["server commands"]["printing"] 
@@ -106,7 +126,12 @@ class CrazyEight(Game):
             current_turn = 1 - current_turn
 
     def play_round(self, server, state, pl1 , pl2):
-        """Plays a round of Crazy Eight."""
+        """Plays a round of Crazy Eight.
+                Args:
+                        server: The server to send messages to the players.
+                        state: The game state.
+                        pl1: The first player client.
+                        pl2: The second player client."""
         # Deal the initial cards
         self.deal_initial_cards(server, state, pl1, pl2)
         # Set the top card
@@ -121,7 +146,10 @@ class CrazyEight(Game):
 
      
     def run(self, server, players):
-        """Runs the game loop."""
+        """Runs the game loop.
+                Args:
+                        server: The server to send messages to the players.
+                        players: The list of player clients."""
         # make a state for blackjack 
         state = States.BLACKJACK
         # the client player

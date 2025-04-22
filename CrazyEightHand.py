@@ -1,4 +1,8 @@
 ### ABDI do this
+# CrazyEightHand.py
+# includes methods to add cards, remove cards, get playable cards
+# and draw cards from the deck
+# contains a list of cards
 
 from BJDeck import Deck
 from BJCard import Card

@@ -1,4 +1,8 @@
 ### ABDI do this
+# CrazyEightPlayer.py
+# Includes methods to play a card, check if the player has won,
+# draw cards until a playable card is found, and show the player's hand
+# contains a hand object and name
 
 from CrazyEightHand import Hand
 from BJCard import Card
