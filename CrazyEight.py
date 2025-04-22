@@ -100,7 +100,6 @@ class CrazyEight(Game):
                         player_game.play_card(card, self.top_card)
                         self.discard_pile.append(self.top_card)
                         if card.rank == "8":
-                            # team question style guide.
                             new_suit = server.call(player_cast, 
                                        state["server commands"]["suit_change"])
                             if new_suit == None:

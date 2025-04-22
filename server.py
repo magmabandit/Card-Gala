@@ -42,6 +42,8 @@ class Server:
         self.listen_socket.bind(('', PORT))
         self.listen_socket.listen(100)
 
+        
+
         self.login_cache = LockedDict()
         self.idle_players = LockedList()
 
@@ -287,7 +289,7 @@ class Server:
             self.waiting_game_rooms.remove(game)
             for pl in game.get_players():
                 self.idle_players.remove(pl)
-            p = Process(target=game.run, args=[self, game.get_players()])
+            p = threading.Thread(target=game.run, args=[self, game.get_players()])
             p.start()
 
             # Collect result of multiprocessing on game finish

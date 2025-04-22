@@ -1,3 +1,4 @@
+### ABDI and ETHAN do this
 # BJTWOPlayer.py
 # A simplified two-player Blackjack game where players play against a dealer.
 
@@ -323,7 +324,6 @@ class BJ2Player(Game):
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
 
-        # Some concurrent behavior when players first enter the game
         player1_thread = threading.Thread(target=self.welcome_add_money, 
                                           args=[server, pl1, state, player1])
         player2_thread = threading.Thread(target=self.welcome_add_money,
