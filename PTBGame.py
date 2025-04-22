@@ -101,8 +101,13 @@ class PressTheButton(Game):
         for p in players:
             server.cast(p, state["server commands"]["printing"] +
             f"Welcome to Press the Button! Whoever gets {self.points}" 
-                " points first wins! Press your given button first!")          
-
+                " points first wins! Press your given button first!")  
+        pl1 = players[0]
+        pl2 = players[1]        
+        server.cast(pl2, state["server commands"]["printing"] 
+                    + "This is your opponent, " + pl1.get_username() + "!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "This is your opponent, " + pl2.get_username() + "!!")
         time.sleep(2)
 
         # each thread should send separate players prompt to press button under
