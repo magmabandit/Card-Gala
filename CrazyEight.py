@@ -161,10 +161,14 @@ class CrazyEight(Game):
 
         server.cast(pl1, state["server commands"]["printing"] 
                     + "Welcome to Crazy Eight, " + pl1.get_username() + "!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "This is your opponent, " + pl2.get_username() + "!!")
         name = pl1.get_username()
         player1.set_name(name)
         server.cast(pl2, state["server commands"]["printing"] 
                     + "Welcome to Crazy Eight, " + pl2.get_username() + "!!")
+        server.cast(pl2, state["server commands"]["printing"] 
+                    + "This is your opponent, " + pl1.get_username() + "!!")
         name = pl2.get_username()
         player2.set_name(name)
 

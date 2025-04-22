@@ -328,6 +328,10 @@ class BJ2Player(Game):
                                           args=[server, pl1, state, player1])
         player2_thread = threading.Thread(target=self.welcome_add_money,
                                           args=[server, pl2, state, player2])
+        server.cast(pl2, state["server commands"]["printing"] 
+                    + "This is your opponent, " + pl1.get_username() + "!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "This is your opponent, " + pl2.get_username() + "!!")
         player1_thread.start()
         player2_thread.start()
         player1_thread.join()
