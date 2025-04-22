@@ -1,4 +1,8 @@
-### ETHAN do this
+#
+# BJGame.py
+#
+# Game mechanics for the blackjack 1 player game
+#
 
 from BJDeck import Deck
 from BJPlayer import Player
@@ -11,6 +15,7 @@ from colorama import Fore, Back, Style
 from ascii_art import art
 
 class BJGame(Game):
+    """ Game mechanics for one-player BJ game """
     def __init__(self, players, room_name):
         # Sets max_players to 1 and game_type to blackjack
         super().__init__(1, players, "blackjack", room_name)
@@ -22,6 +27,7 @@ class BJGame(Game):
      
     # Method to create a new deck if the current deck is running low
     def new_deck(self):
+        """ Create a new deck """
         if self.deck.size() < 10:
             self.deck = Deck()
             self.deck.shuffle()
@@ -66,7 +72,8 @@ class BJGame(Game):
             
             # print("here", theHand)
             server.cast(player, state["server commands"]["printing"] + 
-                                "\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-\n\nYOUR HAND: " + string_hand)
+                                "\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-\n\nYOUR HAND: " 
+                                + string_hand)
             # print(art[theHand[0]], art[theHand[1]])
             server.cast(player, state["server commands"]["printing"] + 
                                 "YOUR HAND VALUE: " + 

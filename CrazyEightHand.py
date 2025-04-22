@@ -1,6 +1,5 @@
 ### ABDI do this
 
-from typing import List
 from BJDeck import Deck
 from BJCard import Card
 class Hand:

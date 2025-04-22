@@ -1,4 +1,3 @@
-### ABDI and ETHAN do this
 # BJPlayer.py
 # Player class for the blackjack game
 # includes methods to hit, show hand, and get money
@@ -296,6 +295,7 @@ class BJ2Player(Game):
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
 
+        # Some concurrent behavior when players first enter the game
         player1_thread = threading.Thread(target=self.welcome_add_money, 
                                           args=[server, pl1, state, player1])
         player2_thread = threading.Thread(target=self.welcome_add_money,

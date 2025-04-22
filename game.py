@@ -2,7 +2,6 @@
 # game.py
 # superclass definition for implementable games in Card-GALA
 
-from player import Player
 from abc import ABC, abstractmethod
 from locked_list import LockedList
 
@@ -20,7 +19,6 @@ class Game(ABC):
         """
         self.max_players: int = max_players
         self.players: LockedList = players
-        print(str(type(players)), "     :       ", str(type(self.players)))
         self.game_type: str = game_type
         self.room_name: str = room_name
 

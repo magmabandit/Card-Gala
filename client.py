@@ -10,7 +10,6 @@ import sys
 # for PTB
 import tqdm
 import time
-import keyboard
 
 from colorama import Fore, Back, Style
 from ascii_art import art

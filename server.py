@@ -1,4 +1,7 @@
-### ETHAN do this
+#
+# server.py
+#
+# mechanics for the cardgala server
 
 import socket
 import select
@@ -22,13 +25,18 @@ from colorama import Fore, Back, Style
 
 PORT = 9998
 MAX_GAME_INSTANCES = 4
-GAMES = {"blackjack": BJGame, "blackjack2player": BJ2Player, "pressthebutton": PressTheButton,
-         "crazy8":CrazyEight}
+GAMES = {
+            "blackjack": BJGame, 
+            "blackjack2player": BJ2Player, 
+            "pressthebutton": PressTheButton,
+            "crazy8":CrazyEight
+        }
 ERROR = "e"
 
 class Server:
 
     def __init__(self):
+        """ init all server variables """
         self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.listen_socket.bind(('', PORT))
@@ -44,12 +52,21 @@ class Server:
         self.waiting_game_rooms = LockedDict()
 
         self.player_threads = []
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        logging.basicConfig(
+            level=logging.DEBUG, 
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
         self.logger = logging.getLogger(__name__)
 
     def run_server(self):
+        """ runs the server """
 
-        waiting_games_thread = threading.Thread(target=self.send_waiting_players_update, args = [])
+        # This thread manages players that are waiting for a 
+        # game room that they have joined to start
+        waiting_games_thread = threading.Thread(
+            target=self.send_waiting_players_update, 
+            args = []
+        )
         waiting_games_thread.start()
 
         try:
@@ -57,15 +74,19 @@ class Server:
                 # When a new client attempts to connect, accept the connection
                 # and init the new player
                 self.logger.debug("Accepting new connection")
-                # self.logger.debug("Accepting new connection")
-                new_conn, addr = self.listen_socket.accept() # this command is blocking by default
+
+                # this command is blocking by default
+                new_conn, addr = self.listen_socket.accept()
+
                 new_player = Player(connection=new_conn)
                 self.idle_players.append(new_player)
                 self.logger.debug("New connection accepted")
-                self.logger.debug("New connection accepted")
 
                 self.logger.debug("Starting new player")
-                player_thread = threading.Thread(target=self.host_player, args=[new_player])
+                player_thread = threading.Thread(
+                    target=self.host_player, 
+                    args=[new_player]
+                )
                 self.logger.debug("new player thread created")
                 self.player_threads.append(player_thread)
                 player_thread.start()
@@ -80,12 +101,14 @@ class Server:
             waiting_games_thread.join()
     
     def host_player(self, player):
+        """ Handle player login and choosing of game """
         if self.handle_login(player) == ERROR:
             return
         if self.handle_choose_game(player) == ERROR:
             return 
     
     def handle_login(self, player):
+        """ Handle player login """
         state = States.LOGIN
 
         logged_in = False
@@ -105,7 +128,9 @@ class Server:
             password = user_pass[1]
             self.logger.debug(f"password: {password}")
 
-            self.logger.debug(f"login type: {login_type}, username: {username}, password: {password}")
+            self.logger.debug(
+                f"login type: {login_type}, username: {username}, password: {password}"
+            )
 
             # Log player in
             responses = state["client responses"]["login"]
@@ -118,15 +143,20 @@ class Server:
                 logged_in = self.login_error(login_type, player)
                 return ERROR # If there is an error, kill the thread
         
-        self.cast(player, state["server commands"]["set username"] + player.get_username())
+        self.cast(player, state["server commands"]["set username"] 
+                  + player.get_username())
     
     def handle_choose_game(self, player):
+        """ Handle player choosing game """
         state = States.CHOOSE_GAME
 
         chosen_game = False
         while not chosen_game:
             self.logger.debug("Entering choose game state")
-            response = self.call(player, state["server commands"]["choose game"] + self.waiting_game_rooms.format_waiting_games_for_send())
+            response = self.call(
+                player, state["server commands"]["choose game"] 
+                    + self.waiting_game_rooms.format_waiting_games_for_send()
+            )
             if response is None: # The client connection closed
                 self.logger.debug("Killing thread")
                 return ERROR #kill the thread 
@@ -151,6 +181,7 @@ class Server:
     # If a player has disconnected the player will be removed
     #   from idle_players and the connection is closed
     def call(self, player: Player, message: str):
+        """ Call to server """
         self.logger.debug(f"Sending message {message}")
         connection = player.get_connection()
         connection.sendall(message.encode('utf-8'))
@@ -167,10 +198,12 @@ class Server:
             self.remove_player(player)
 
     # Expects response 'ok'
-    # Block until 'ok' response in order to enforce order of communication with client
-    # If it recieves a response other than 'ok' the connection is ternimated and error
-    # is sent to the client
+    # Block until 'ok' response in order to enforce order of communication
+    # with client
+    # If it recieves a response other than 'ok' the connection is ternimated
+    # and error is sent to the client
     def cast(self, player: Player, message: str):
+        """ Cast to server """
         connection = player.get_connection()
         connection.sendall(message.encode('utf-8'))
 
@@ -187,23 +220,35 @@ class Server:
 
     ### LOGIN STATE ###
     def new_player(self, new_player, username, password):
+        """ Handle new player login """
         if username in self.login_cache.get_dict():
-            self.cast(new_player, States.LOGIN["server commands"]["username used"])
+            self.cast(
+                new_player, 
+                States.LOGIN["server commands"]["username used"]
+            )
             return False
         self.login_cache.update(username, password)
         new_player.set_username(username)
         return True
     def existing_player(self, new_player, username, password):
+        """ Handle existing player login """
         if username not in self.login_cache.get_dict():
-            self.cast(new_player, States.LOGIN["server commands"]["invalid login"])
+            self.cast(
+                new_player, 
+                States.LOGIN["server commands"]["invalid login"]
+            )
             return False
         if password == self.login_cache.get(username):
             new_player.set_username(username)
             return True
         else:
-            self.cast(new_player, States.LOGIN["server commands"]["invalid login"])
+            self.cast(
+                new_player, 
+                States.LOGIN["server commands"]["invalid login"]
+            )
             return False
     def login_error(self, login_type, new_player):
+        """ Handle bad client response to login request """
         # If we don't get a valid response from the client 
         # raise an error and terminate the connection
 
@@ -217,6 +262,7 @@ class Server:
     ### CHOOSE_GAME STATE ###
 
     def add_player_to_game(self, player, room_name):
+        """ Handle join game response """
         # attempt to add player to game
         game = None
         for waiting_game in self.waiting_game_rooms.get_dict():
@@ -255,10 +301,14 @@ class Server:
                 pl.set_in_game(False)
                 pl.set_game(None)
 
-                # create and start new threads for all players to choose game again
+                # create and start new threads for all players to 
+                # choose game again
                 if pl != player:
                     self.logger.debug("Starting new player")
-                    player_thread = threading.Thread(target=self.handle_choose_game, args=[pl])
+                    player_thread = threading.Thread(
+                        target=self.handle_choose_game, 
+                        args=[pl]
+                    )
                     self.logger.debug("new player thread created")
                     self.player_threads.append(player_thread)
                     player_thread.start()
@@ -267,12 +317,17 @@ class Server:
                     # let this player choose new game
                     return False
         else:
-            self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
+            self.cast(
+                player, 
+                States.CHOOSE_GAME["server commands"]["waiting for players"]
+            )
             return True
     
     def create_new_game(self, player, game_type_str):
+        """ Handle create new game response """
         # attempt to create new game
-        # This increments the value of registered_games if doing so creates a valid num of game instances
+        # This increments the value of registered_games if doing so creates 
+        # a valid num of game instances
         # This is all done with the lock
         if game_type_str not in GAMES.keys():
             err = f"\n{Fore.RED}{game_type_str} IS NOT A VALID GAME TYPE. PLEASE TRY AGAIN.{Fore.RESET}"
@@ -282,11 +337,17 @@ class Server:
 
         val = self.registered_games.increment_if_less_x(game_type_str, MAX_GAME_INSTANCES)
         if val == -1:
-            self.cast(player, States.CHOOSE_GAME["server commands"]["max_game_inst"])
+            self.cast(
+                player, 
+                States.CHOOSE_GAME["server commands"]["max_game_inst"]
+            )
             return False
         player_list = LockedList()
         player_list.append(player)
-        new_game = GAMES[game_type_str](players=player_list, room_name= f"{game_type_str}{val}")
+        new_game = GAMES[game_type_str](
+            players=player_list, 
+            room_name= f"{game_type_str}{val}"
+        )
         player.set_in_game(True)
         player.set_game(new_game)
         
@@ -295,7 +356,10 @@ class Server:
             self.logger.debug("starting game")
             for pl in new_game.get_players():
                 self.idle_players.remove(pl)
-            p = Process(target=new_game.run, args=[self, new_game.get_players()])
+            p = Process(
+                target=new_game.run, 
+                args=[self, new_game.get_players()]
+            )
             p.start()
 
             # Collect result of multiprocessing on game finish
@@ -311,10 +375,14 @@ class Server:
                 pl.set_in_game(False)
                 pl.set_game(None)
 
-                # create and start new threads for all players to choose game again
+                # create and start new threads for all players to 
+                # choose game again
                 if pl != player:
                     self.logger.debug("Starting new player")
-                    player_thread = threading.Thread(target=self.handle_choose_game, args=[pl])
+                    player_thread = threading.Thread(
+                        target=self.handle_choose_game, 
+                        args=[pl]
+                    )
                     self.logger.debug("new player thread created")
                     self.player_threads.append(player_thread)
                     player_thread.start()
@@ -325,16 +393,21 @@ class Server:
         else:
             # update waiting_game_rooms
             self.waiting_game_rooms.update(new_game, 1)
-            self.cast(player, States.CHOOSE_GAME["server commands"]["waiting for players"])
+            self.cast(
+                player, 
+                States.CHOOSE_GAME["server commands"]["waiting for players"]
+            )
             return True
         
     def client_quit(self, player):
+        """ Handle quit cardgala response """
         state = States.END
         self.cast(player, state["server commands"]["end"])
         self.remove_player(player)
         return True
         
     def choose_game_error(self, choose_game_type, new_player):
+        """ Handle bad response from client """
         # If we don't get a valid response from the client 
         # raise an error and terminate the connection
 
@@ -346,6 +419,7 @@ class Server:
         return True
     
     def remove_player(self, player):
+        """ Remove player from server """
         self.logger.debug("Removing player")
         if player in self.idle_players:
             self.idle_players.remove(player)
@@ -353,7 +427,10 @@ class Server:
             if player.is_in_game():
                 game = player.get_game()
                 game.remove_player(player)
-                self.waiting_game_rooms.update(game, self.waiting_game_rooms.get(game) - 1)
+                self.waiting_game_rooms.update(
+                    game, 
+                    self.waiting_game_rooms.get(game) - 1
+                )
                 if self.waiting_game_rooms.get(game) == 0:
                     self.logger.debug("Game removed")
                     self.waiting_game_rooms.remove(game)                     
@@ -362,12 +439,16 @@ class Server:
         self.logger.debug("Done removing player")
 
     def send_waiting_players_update(self):
+        """ Handle players waiting for enough players to join their room """
         while True:
             for game in self.waiting_game_rooms.get_dict().copy():
                 num_players = game.get_num_players()
                 max_players = game.get_max_players()
                 for player in game.get_players():
                     message = f"\r{Fore.GREEN}Waiting for players to join. {num_players}/{max_players} joined{Fore.RESET}"
-                    self.cast(player, States.CHOOSE_GAME["server commands"]["printing over"] +
-                                message)
+                    self.cast(
+                        player, 
+                        States.CHOOSE_GAME["server commands"]["printing over"]
+                                + message
+                    )
             time.sleep(1)
