@@ -1,15 +1,159 @@
 from colorama import Fore, Back, Style
 
 art = {
-    "ASpades": "Ace of Spades 🂡",
-    "2Spades": "2 of Spades 🂢",
-    "3Spades": "3 of Spades 🂣",
-    "4Spades": "4 of Spades 🂤 ",
-    "5Spades": "5 of Spades 🂥",
-    "6Spades": "6 of Spades 🂦",
-    "7Spades": "7 of Spades 🂧",
-    "8Spades": "8 of Spades 🂨",
-    "9Spades": "9 of Spades 🂩",
+    "ASpades": """"XXXXXXXXXXXXXXXXXXX
+X                 X
+X A               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               A X
+X                 X
+XXXXXXXXXXXXXXXXXXX"""",
+    "2Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 2               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               2 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "3Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 3               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               3 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "4Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 4               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               4 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "5Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 5               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               5 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "6Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 6               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               6 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "7Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 7               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               7 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "8Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 8               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               8 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
+    "9Spades": """XXXXXXXXXXXXXXXXXXX
+X                 X
+X 9               X
+X        X        X
+X       X X       X
+X      X   X      X
+X     X     X     X
+X    X       X    X
+X   X         X   X
+X   X         X   X
+X    X   X   X    X
+X     XXX XXX     X
+X       X X       X
+X      XXXXX      X
+X               9 X
+X                 X
+XXXXXXXXXXXXXXXXXXX""",
     "10Spades": "10 of Spades 🂪",
     "JSpades": "Jack of Spades 🂫",
     "QSpades": "Queen of Spades 🂭",
