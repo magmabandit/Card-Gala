@@ -1,4 +1,8 @@
 ### ABDI do this
+# BJHand.py
+# Hand class for blackjack game
+# includes methods to add cards, calculate hand value, and display hand
+# contains a list of cards and the total value of the hand
 
 from BJDeck import Deck
 from BJCard import Card
@@ -32,7 +36,7 @@ class Hand:
             if card.rank == "A":
                 num_aces += 1  
 
-        # If total is over 21 and we have Aces, adjust value of Ace to ``
+        # If total is over 21 and we have Aces, adjust value of Ace to 1
         while total > 21 and num_aces > 0:
             total -= 10  # Convert one Ace from 11 to 1
             num_aces -= 1

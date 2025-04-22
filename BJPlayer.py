@@ -1,4 +1,8 @@
 ### ABDI do this
+# BJPlayer.py
+# Player class for the blackjack game
+# includes methods to hit, show hand, and get money
+# contains a hand object, money, and name
 
 from BJHand import Hand
 from BJCard import Card
@@ -11,8 +15,10 @@ class Player:
     # create a player with a hand, money, and name
     def Make_name(self, name: str):
         self.name = name
+
     def get_username(self):
         return self.name
+    
     def Make_bet(self, bet: int):
         self.money -= bet
 

@@ -1,5 +1,8 @@
 ### ABDI and ETHAN do this
-
+# BJPlayer.py
+# Player class for the blackjack game
+# includes methods to hit, show hand, and get money
+# contains a hand object, money, and name
 import threading
 
 from BJDeck import Deck
@@ -9,6 +12,10 @@ from game import Game
 from states import States
 
 class BJ2Player(Game):
+    """ Initializes a 2-player Blackjack game. 
+        Args:
+            players: List of player objects.
+            room_name: Name of the game room."""
     def __init__(self, players, room_name):
         super().__init__(2, players, "blackjack2player", room_name)
         # Game Deck
@@ -20,15 +27,20 @@ class BJ2Player(Game):
         self.bet1 = None
         self.bet2 = None
 
-    # Method to create a new deck if the current deck is running low
     def new_deck(self):
+        """Creates a new deck if the current deck has less than 10 cards."""
         if self.deck.size() < 10:
             self.deck = Deck()
             self.deck.shuffle()
 
-    # Deals the initial cards to the player and the dealer: Keeps dealer's second card hidden
     def deal_initial_cards(self, server, state, pl1, pl2):
-        """Deals two cards to the player and the dealer."""
+        """ Deals two cards each to player 1, player 2, and 
+            the dealer (second dealer card is hidden).
+            Args:
+                server: The server instance to communicate with players.
+                state: The game state.
+                pl1: Player 1 object.
+                pl2: Player 2 object."""
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
         player1.Hit(self.deck.deal_card())
@@ -74,7 +86,8 @@ class BJ2Player(Game):
         "Dealers First Card: " +
         str(self.dealer.Value_first_card()) + "\n")       
 
-    def player_turn(self, server, state, current_player, other_player, pl1_turn):
+    def player_turn(self, server, state, current_player, other_player,
+                         pl1_turn):
         """Handles the player's hitting or standing, alternating turns."""
 
         if pl1_turn:
@@ -83,47 +96,69 @@ class BJ2Player(Game):
             current_player_game = self.players_logic[1]
         
         while True:
-            server.cast(current_player, state["server commands"]["printing"] + "\nYour Hand: " + current_player_game.Show_hand())
-            server.cast(current_player, state["server commands"]["printing"] + "\nHand Value: " + str(current_player_game.Get_hand().get_value()))
+            server.cast(current_player, state["server commands"]["printing"] 
+                        + "\nYour Hand: " + current_player_game.Show_hand())
+            server.cast(current_player, state["server commands"]["printing"] 
+                        + "\nHand Value: " 
+                            + str(current_player_game.Get_hand().get_value()))
 
             if current_player_game.Get_hand().get_value() > 21:
-                server.cast(current_player, state["server commands"]["printing"] + "You busted!")
+                server.cast(current_player,
+                             state["server commands"]["printing"] 
+                                 + "You busted!")
                 return False
 
-            move = server.call(current_player, state["server commands"]["Player-choice"])
+            move = server.call(current_player, 
+                               state["server commands"]["Player-choice"])
             if move == None:
                 exit(0)
             if move == "h":  # Hit
                 current_player_game.Hit(self.deck.deal_card())
-                server.cast(current_player, state["server commands"]["printing"] + "\nYour new hand: " + current_player_game.Show_hand())
+                server.cast(current_player, 
+                            state["server commands"]["printing"] 
+                                + "\nYour new hand: " 
+                                    + current_player_game.Show_hand())
             elif move == "s":  # Stand
                 break
             else:
-                server.cast(current_player, state["server commands"]["printing"] + 
-                            "Invalid choice. Enter H to hit or S to stand.")
+                server.cast(current_player, 
+                            state["server commands"]["printing"] +
+                                "Invalid choice" + 
+                                    " Enter H to hit or S to stand.")
 
             # Show the other player's current hand for visibility
             server.cast(other_player, state["server commands"]["printing"] + 
-                        "\n" + current_player.get_username() + "'s Hand: " + current_player_game.Show_hand())
+                        "\n" + current_player.get_username() + "'s Hand: " 
+                            + current_player_game.Show_hand())
             server.cast(other_player, state["server commands"]["printing"] + 
-                        "\n" + current_player.get_username() + "'s Hand Value: " + str(current_player_game.Get_hand().get_value()))
+                        "\n" + current_player.get_username() 
+                            + "'s Hand Value: " + 
+                               str(current_player_game.Get_hand().get_value()))
 
         return True
 
     def dealer_turn(self, server, state, pl1, pl2):
         """Dealer plays according to the rules (hit until 17+)."""
 
-        server.cast(pl1, state["server commands"]["printing"] + "\nDealer's Turn...")
-        server.cast(pl2, state["server commands"]["printing"] + "\nDealer's Turn...")
-        server.cast(pl1, state["server commands"]["printing"] + self.dealer.Show_hand())
-        server.cast(pl2, state["server commands"]["printing"] + self.dealer.Show_hand())
+        server.cast(pl1, state["server commands"]["printing"] 
+                        + "\nDealer's Turn...")
+        server.cast(pl2, state["server commands"]["printing"] 
+                        + "\nDealer's Turn...")
+        server.cast(pl1, state["server commands"]["printing"] 
+                        + self.dealer.Show_hand())
+        server.cast(pl2, state["server commands"]["printing"] 
+                        + self.dealer.Show_hand())
 
         self.dealer.Play_turn(self.deck)
 
-        server.cast(pl1, state["server commands"]["printing"] + self.dealer.Show_hand())
-        server.cast(pl2, state["server commands"]["printing"] + self.dealer.Show_hand())
-        server.cast(pl1, state["server commands"]["printing"] + str(self.dealer.Get_hand().get_value()))
-        server.cast(pl2, state["server commands"]["printing"] + str(self.dealer.Get_hand().get_value()))
+        server.cast(pl1, state["server commands"]["printing"] 
+                        + self.dealer.Show_hand())
+        server.cast(pl2, state["server commands"]["printing"] 
+                        + self.dealer.Show_hand())
+        server.cast(pl1, state["server commands"]["printing"] 
+                        + str(self.dealer.Get_hand().get_value()))
+        server.cast(pl2, state["server commands"]["printing"] 
+                        + str(self.dealer.Get_hand().get_value()))
 
     def determine_winner(self, bet, server, state, player, pl1_turn):
         """Compares hands and determines who wins the round."""
@@ -137,16 +172,20 @@ class BJ2Player(Game):
         dealer_value = self.dealer.Get_hand().get_value()
 
         if dealer_value > 21 or player_value > dealer_value:
-            server.cast(player, state["server commands"]["printing"] + "You win!")
+            server.cast(player, state["server commands"]["printing"] 
+                            + "You win!")
             player_game.add_money(bet * 1.5)
         elif player_value == dealer_value:
-            server.cast(player, state["server commands"]["printing"] + "It's a tie! You get your money back.")
+            server.cast(player, state["server commands"]["printing"] 
+                            + "It's a tie! You get your money back.")
             player_game.add_money(bet)  
         else:
-            server.cast(player, state["server commands"]["printing"] + "Dealer wins!")
+            server.cast(player, state["server commands"]["printing"] 
+                            + "Dealer wins!")
 
     def place_player_bet(self, server, pl, state, player):
-        bet = server.call(pl, state["server commands"]["place bet"] + str(player.Get_money()))
+        bet = server.call(pl, state["server commands"]["place bet"] 
+                              + str(player.Get_money()))
         if bet == None:
             exit(0)
         if player == self.players_logic[0]:
@@ -161,30 +200,36 @@ class BJ2Player(Game):
         player2 = self.players_logic[1]
 
         if player1.Get_money() <= 0 and player2.Get_money() <= 0:
-            server.cast(pl1, state["server commands"]["printing"] + "You're out of money! Game over :(.")
-            server.cast(pl2, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            server.cast(pl1, state["server commands"]["printing"] 
+                            + "You're out of money! Game over :(.")
+            server.cast(pl2, state["server commands"]["printing"] 
+                            + "You're out of money! Game over :(.")
             return False
         elif player1.Get_money() <= 0:
-            server.cast(pl1, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            server.cast(pl1, state["server commands"]["printing"] 
+                            + "You're out of money! Game over :(.")
             return False
         elif player2.Get_money() <= 0:
-            server.cast(pl2, state["server commands"]["printing"] + "You're out of money! Game over :(.")
+            server.cast(pl2, state["server commands"]["printing"] 
+                            + "You're out of money! Game over :(.")
             return False
 
         self.deck.shuffle()
-        player1_thread = threading.Thread(target=self.place_player_bet, args=[server, pl1, state, player1])
-        player2_thread = threading.Thread(target=self.place_player_bet, args=[server, pl2, state, player2])
+        player1_thread = threading.Thread(target=self.place_player_bet, 
+                                          args=[server, pl1, state, player1])
+        player2_thread = threading.Thread(target=self.place_player_bet, 
+                                          args=[server, pl2, state, player2])
         player1_thread.start()
         player2_thread.start()
         player1_thread.join()
         player2_thread.join()
-        
-        self.deal_initial_cards(server, state, pl1, pl2)  # Deal to both players at the start
-
+        # Deal to both players at the start
+        self.deal_initial_cards(server, state, pl1, pl2) 
         # Player 1's and Player 2's turns (alternating hits)
-        pl1_not_busted = self.player_turn(server, state, pl1, pl2, True)  # Player 1's turn
-        pl2_not_busted = self.player_turn(server, state, pl2, pl1, False)  # Player 2's turn
-
+        # Player 1's turn
+        pl1_not_busted = self.player_turn(server, state, pl1, pl2, True)  
+        # Player 2's turn
+        pl2_not_busted = self.player_turn(server, state, pl2, pl1, False)  
         # After both players are done, dealer plays
         if pl1_not_busted or pl2_not_busted:
             self.dealer_turn(server, state, pl1, pl2)
@@ -194,11 +239,17 @@ class BJ2Player(Game):
         if pl2_not_busted:
             self.determine_winner(self.bet2, server, state, pl2, False)
 
-        server.cast(pl1, state["server commands"]["printing"] + "Amount of money left: " + str(player1.Get_money()))
-        server.cast(pl2, state["server commands"]["printing"] + "Amount of money left: " + str(player2.Get_money()))
+        server.cast(pl1, state["server commands"]["printing"] 
+                        + "Amount of money left: " 
+                            + str(player1.Get_money()))
+        server.cast(pl2, state["server commands"]["printing"] 
+                        + "Amount of money left: " 
+                            + str(player2.Get_money()))
 
-        Game_check1 = server.call(pl1, state["server commands"]["Player-choice2"])
-        Game_check2 = server.call(pl2, state["server commands"]["Player-choice2"])
+        Game_check1 = server.call(pl1, 
+                                  state["server commands"]["Player-choice2"])
+        Game_check2 = server.call(pl2, 
+                                  state["server commands"]["Player-choice2"])
         if Game_check1 == None or Game_check2 == None:
             exit(0)
 
@@ -213,7 +264,8 @@ class BJ2Player(Game):
         
     def welcome_add_money(self, server, pl1, state, player1):
         # send welcome message(cast printing)
-        server.cast(pl1, state["server commands"]["printing"] + "Welcome to blackjack, " + pl1.get_username() + "!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "Welcome to blackjack, " + pl1.get_username() + "!!")
         name = pl1.get_username()
         player1.Make_name(name)
 
@@ -224,7 +276,11 @@ class BJ2Player(Game):
         player1.add_money(int(money))
 
     def run(self, server, players):
-        """Runs the game loop."""
+        """Starts the game loop for 2-player Blackjack.
+        Args:
+            server: The server instance to communicate with players.
+            players: List of player objects.
+        """
         # make a state for blackjack 2
         state = States.BLACKJACK
         # the client player
@@ -235,8 +291,10 @@ class BJ2Player(Game):
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
 
-        player1_thread = threading.Thread(target=self.welcome_add_money, args=[server, pl1, state, player1])
-        player2_thread = threading.Thread(target=self.welcome_add_money, args=[server, pl2, state, player2])
+        player1_thread = threading.Thread(target=self.welcome_add_money, 
+                                          args=[server, pl1, state, player1])
+        player2_thread = threading.Thread(target=self.welcome_add_money,
+                                          args=[server, pl2, state, player2])
         player1_thread.start()
         player2_thread.start()
         player1_thread.join()
@@ -245,5 +303,7 @@ class BJ2Player(Game):
 
         self.play_round(server, state, pl1,pl2)
 
-        server.cast(pl1, state["server commands"]["printing"] + "Thanks for playing Blackjack! Goodbye!!")
-        server.cast(pl2, state["server commands"]["printing"] + "Thanks for playing Blackjack! Goodbye!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "Thanks for playing Blackjack! Goodbye!!")
+        server.cast(pl2, state["server commands"]["printing"] 
+                    + "Thanks for playing Blackjack! Goodbye!!")

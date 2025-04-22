@@ -10,8 +10,10 @@ class Player:
     # create a player with a hand, money,
     def set_name(self, name: str):
         self.name = name
+
     def get_name(self):
         return self.name
+    
     def get_hand(self):
         return self.hand
     
@@ -43,6 +45,7 @@ class Player:
         return len(self.hand.cards) == 0
     
     def draw_until_playable(self, deck, top_card: Card):
+        # how to shorten it? team question
         while not self.hand.get_playable_cards(top_card) and not deck.is_empty():
             self.hand.draw_from_deck(deck)
      

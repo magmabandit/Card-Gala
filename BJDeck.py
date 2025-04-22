@@ -1,4 +1,8 @@
 ### ABDI do this
+# BJDeck.py
+# Deck class for blackjack and crazy eights
+# includes methods to shuffle, deal cards, and check if empty
+# contains a list of cards where each card is a suit and rank
 
 from BJCard import Card
 import random
@@ -19,7 +23,9 @@ class Deck:
 
     def deal_card(self):
         return self.cards.pop()
+    
     def size(self):
         return len(self.cards)
+    
     def is_empty(self):
         return len(self.cards) == 0

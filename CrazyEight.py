@@ -29,6 +29,7 @@ class CrazyEight(Game):
         server.cast(pl2, state["server commands"]["printing"] +
         "Your Hand: " +
         player2.show_hand() + "\n")
+        
     def every_turn(self, server, state, pl1, pl2, player1, player2):
         current_turn = 0
         players = [pl1, pl2]
@@ -38,8 +39,10 @@ class CrazyEight(Game):
             player_cast = players[current_turn]
             player_game = logic[current_turn]
 
-            server.cast(player_cast, state["server commands"]["printing"] + "\nYour turn! Top card: " + str(self.top_card))
-            server.cast(player_cast, state["server commands"]["printing"] + "Your Hand: " + player_game.show_hand())
+            server.cast(player_cast, state["server commands"]["printing"] 
+                        + "\nYour turn! Top card: " + str(self.top_card))
+            server.cast(player_cast, state["server commands"]["printing"] 
+                        + "Your Hand: " + player_game.show_hand())
 
             playable_cards = player_game.hand.get_playable_cards(self.top_card)
 
@@ -49,17 +52,23 @@ class CrazyEight(Game):
                     self.deck.shuffle()
                     self.discard_pile = []
                 player_game.draw_until_playable(self.deck, self.top_card)
-                server.cast(player_cast, state["server commands"]["printing"] + "No valid cards, drawing until a playable one.\n")
+                server.cast(player_cast, state["server commands"]["printing"] 
+                            + "No valid cards" 
+                                +  " drawing until a playable one.\n")
             # Prompt player to choose a card
             playable_cards = player_game.hand.get_playable_cards(self.top_card)
-            server.cast(player_cast, state["server commands"]["printing"] + "Playable cards:\n")
+            server.cast(player_cast, state["server commands"]["printing"] 
+                        + "Playable cards:\n")
             for c in playable_cards:
-                server.cast(player_cast, state["server commands"]["printing"] + str(c))
+                server.cast(player_cast, state["server commands"]["printing"] 
+                            + str(c))
 
             not_played_card = True
             while not_played_card:
-                suit = server.call(player_cast, state["server commands"]["suit"])
-                rank = server.call(player_cast, state["server commands"]["rank"])
+                suit = server.call(player_cast, 
+                                   state["server commands"]["suit"])
+                rank = server.call(player_cast, 
+                                   state["server commands"]["rank"])
                 if suit == None or rank == None:
                     exit(0)
                 card = Card(rank, suit)
@@ -69,7 +78,9 @@ class CrazyEight(Game):
                         player_game.play_card(card, self.top_card)
                         self.discard_pile.append(self.top_card)
                         if card.rank == "8":
-                            new_suit = server.call(player_cast, state["server commands"]["suit_change"])
+                            # team question style guide.
+                            new_suit = server.call(player_cast, 
+                                       state["server commands"]["suit_change"])
                             if new_suit == None:
                                 exit(0)
                             self.top_card = Card("8", new_suit)
@@ -78,14 +89,18 @@ class CrazyEight(Game):
                         not_played_card = False
                         break
                 else:
-                    server.cast(player_cast, state["server commands"]["printing"] + "Invalid card. Please try again.\n")
+                    server.cast(player_cast,
+                                    state["server commands"]["printing"] 
+                                        + "Invalid card. Please try again.\n")
 
         
         # Check win
             if player_game.has_won():
-                server.cast(player_cast, state["server commands"]["printing"] + " You win! \n")
+                server.cast(player_cast, state["server commands"]["printing"] 
+                            + " You win! \n")
                 other = players[1 - current_turn]
-                server.cast(other, state["server commands"]["printing"] + f"{player_game.get_name()} has won the game.\n")
+                server.cast(other, state["server commands"]["printing"] 
+                            + f"{player_game.get_name()} has won the game.\n")
                 break
 
             current_turn = 1 - current_turn
@@ -101,7 +116,8 @@ class CrazyEight(Game):
         server.cast(pl2, state["server commands"]["printing"] +
                                 "\nTop Card: " + str(self.top_card))
         
-        self.every_turn(server, state, pl1, pl2, self.players_logic[0], self.players_logic[1])
+        self.every_turn(server, state, pl1, pl2, self.players_logic[0], 
+                            self.players_logic[1])
 
      
     def run(self, server, players):
@@ -116,14 +132,18 @@ class CrazyEight(Game):
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
 
-        server.cast(pl1, state["server commands"]["printing"] + "Welcome to Crazy Eight, " + pl1.get_username() + "!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "Welcome to Crazy Eight, " + pl1.get_username() + "!!")
         name = pl1.get_username()
         player1.set_name(name)
-        server.cast(pl2, state["server commands"]["printing"] + "Welcome to Crazy Eight, " + pl2.get_username() + "!!")
+        server.cast(pl2, state["server commands"]["printing"] 
+                    + "Welcome to Crazy Eight, " + pl2.get_username() + "!!")
         name = pl2.get_username()
         player2.set_name(name)
 
         self.play_round(server, state, pl1,pl2)
 
-        server.cast(pl1, state["server commands"]["printing"] + "Thanks for playing Crazy Eight! Goodbye!!")
-        server.cast(pl2, state["server commands"]["printing"] + "Thanks for playing Crazy Eight! Goodbye!!")
+        server.cast(pl1, state["server commands"]["printing"] 
+                    + "Thanks for playing Crazy Eight! Goodbye!!")
+        server.cast(pl2, state["server commands"]["printing"] 
+                    + "Thanks for playing Crazy Eight! Goodbye!!")

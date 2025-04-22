@@ -1,11 +1,16 @@
 ### ABDI do this
+# BJDealer.py
+# Dealer class for blackjack game`
+# includes methods to show the first card, value of the first card, 
+# and play turn`
+# contains a hand object, money, and name
 
 from BJPlayer import Player
 from BJCard import Card
 
 class Dealer(Player):
     def __init__(self):
-  
+
         super().__init__()  
         self.name = "Dealer"  
         self.money = None  
@@ -20,6 +25,5 @@ class Dealer(Player):
             return self.hand.cards[0].check_value()
         
     def Play_turn(self, deck):
-      
         while self.hand.get_value() < 17:
             self.Hit(deck.deal_card())  
