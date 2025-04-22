@@ -1,8 +1,7 @@
 ### ABDI and ETHAN do this
-# BJPlayer.py
-# Player class for the blackjack game
-# includes methods to hit, show hand, and get money
-# contains a hand object, money, and name
+# BJTWOPlayer.py
+# A simplified two-player Blackjack game where players play against a dealer.
+
 import threading
 
 from BJDeck import Deck
@@ -31,6 +30,7 @@ class BJ2Player(Game):
 
     def new_deck(self):
         """Creates a new deck if the current deck has less than 10 cards."""
+
         if self.deck.size() < 10:
             self.deck = Deck()
             self.deck.shuffle()
@@ -90,7 +90,13 @@ class BJ2Player(Game):
 
     def player_turn(self, server, state, current_player, other_player,
                          pl1_turn):
-        """Handles the player's hitting or standing, alternating turns."""
+        """Handles the player's hitting or standing, alternating turns.
+            Args:
+                server: The server instance to communicate with players.
+                state: The game state.
+                current_player: The player whose turn it is.
+                other_player: The other player.
+                pl1_turn: Boolean indicating if it's player 1's turn."""
 
         if pl1_turn:
             current_player_game = self.players_logic[0]
@@ -140,7 +146,12 @@ class BJ2Player(Game):
         return True
 
     def dealer_turn(self, server, state, pl1, pl2):
-        """Dealer plays according to the rules (hit until 17+)."""
+        """Dealer plays according to the rules (hit until 17+).
+            Args:
+                server: The server instance to communicate with players.
+                state: The game state.
+                pl1: Player 1 object.
+                pl2: Player 2 object."""
 
         server.cast(pl1, state["server commands"]["printing"] 
                         + "\nDealer's Turn...")
@@ -163,7 +174,13 @@ class BJ2Player(Game):
                         + str(self.dealer.Get_hand().get_value()))
 
     def determine_winner(self, bet, server, state, player, pl1_turn):
-        """Compares hands and determines who wins the round."""
+        """Compares hands and determines who wins the round.
+            Args:
+                bet: The bet amount for the current player.
+                server: The server instance to communicate with players.
+                state: The game state.
+                player: The player object.
+                pl1_turn: Boolean indicating if it's player 1's turn."""
 
         if pl1_turn:
             player_game = self.players_logic[0]
@@ -197,7 +214,12 @@ class BJ2Player(Game):
         player.Make_bet(int(bet))
 
     def play_round(self, server, state, pl1, pl2):
-        """Runs a full round of Blackjack."""
+        """Runs a full round of Blackjack.
+            Args:
+                server: The server instance to communicate with players.
+                state: The game state.
+                pl1: Player 1 object.
+                pl2: Player 2 object."""
         player1 = self.players_logic[0]
         player2 = self.players_logic[1]
 
@@ -265,7 +287,13 @@ class BJ2Player(Game):
             return False
         
     def welcome_add_money(self, server, pl1, state, player1):
-        # send welcome message(cast printing)
+        """Welcomes the player and adds money to their account.
+            Args:
+                server: The server instance to communicate with players.
+                pl1: Player 1 server.
+                state: The game state.
+                player1: Player 1 game object."""
+        # reduces the string to fit 80 lines
         message = f"{Fore.GREEN}Waiting for players to join. {self.get_num_players()}/{self.get_max_players()} joined{Fore.RESET}"
         server.cast(pl1, state["server commands"]["printing"] +
                     message)

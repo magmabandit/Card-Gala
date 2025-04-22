@@ -1,4 +1,8 @@
 ### ABDI do this
+# BJCard.py
+# Card class for blackjack game
+# includes methods to check value, get suit, and get rank
+# contains a rank and suit
 
 class Card:
     def __init__(self, rank, suit):
@@ -12,8 +16,10 @@ class Card:
             return 10 
         else:
             return int(self.rank)
+        
     def get_suit(self):
         return self.suit
+    
     def get_rank(self):
         return self.rank
         
