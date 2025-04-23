@@ -222,7 +222,7 @@ X      XXXXX      X
 X               K X
 X                 X
 XXXXXXXXXXXXXXXXXXX""",
-    "AHearts": """XXXXXXXXXXXXXXXXXXX
+    "AHearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X A               X
 X                 X
@@ -238,8 +238,8 @@ X        X        X
 X                 X
 X               A X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "2Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "2Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 2               X
 X                 X
@@ -255,8 +255,8 @@ X        X        X
 X                 X
 X               2 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "3Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "3Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 3               X
 X                 X
@@ -272,8 +272,8 @@ X        X        X
 X                 X
 X               3 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "4Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "4Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 4               X
 X                 X
@@ -289,8 +289,8 @@ X        X        X
 X                 X
 X               4 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "5Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "5Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 5               X
 X                 X
@@ -306,8 +306,8 @@ X        X        X
 X                 X
 X               5 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "6Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "6Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 6               X
 X                 X
@@ -323,8 +323,8 @@ X        X        X
 X                 X
 X               6 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "7Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "7Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 7               X
 X                 X
@@ -340,8 +340,8 @@ X        X        X
 X                 X
 X               7 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "8Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "8Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 8               X
 X                 X
@@ -357,8 +357,8 @@ X        X        X
 X                 X
 X               8 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "9Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "9Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 9               X
 X                 X
@@ -374,8 +374,8 @@ X        X        X
 X                 X
 X               9 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "10Hearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "10Hearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 10              X
 X                 X
@@ -391,8 +391,8 @@ X        X        X
 X                 X
 X              10 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "JHearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "JHearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X J               X
 X                 X
@@ -408,8 +408,8 @@ X        X        X
 X                 X
 X               J X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "QHearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "QHearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X Q               X
 X                 X
@@ -425,8 +425,8 @@ X        X        X
 X                 X
 X               Q X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "KHearts": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "KHearts": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X K               X
 X                 X
@@ -442,8 +442,8 @@ X        X        X
 X                 X
 X               K X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "ADiamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "ADiamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X A               X
 X        X        X
@@ -459,8 +459,8 @@ X       X X       X
 X        X        X
 X               A X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "2Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "2Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 2               X
 X        X        X
@@ -476,8 +476,8 @@ X       X X       X
 X        X        X
 X               2 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "3Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "3Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 3               X
 X        X        X
@@ -493,8 +493,8 @@ X       X X       X
 X        X        X
 X               3 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "4Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "4Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 4               X
 X        X        X
@@ -510,8 +510,8 @@ X       X X       X
 X        X        X
 X               4 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "5Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "5Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 5               X
 X        X        X
@@ -527,8 +527,8 @@ X       X X       X
 X        X        X
 X               5 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "6Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "6Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 6               X
 X        X        X
@@ -544,8 +544,8 @@ X       X X       X
 X        X        X
 X               6 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "7Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "7Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 7               X
 X        X        X
@@ -561,8 +561,8 @@ X       X X       X
 X        X        X
 X               7 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "8Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "8Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 8               X
 X        X        X
@@ -578,8 +578,8 @@ X       X X       X
 X        X        X
 X               8 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "9Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "9Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 9               X
 X        X        X
@@ -595,8 +595,8 @@ X       X X       X
 X        X        X
 X               9 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "10Diamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "10Diamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X 10              X
 X        X        X
@@ -612,8 +612,8 @@ X       X X       X
 X        X        X
 X              10 X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "JDiamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "JDiamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X J               X
 X        X        X
@@ -629,8 +629,8 @@ X       X X       X
 X        X        X
 X               J X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "QDiamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "QDiamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X Q               X
 X        X        X
@@ -646,8 +646,8 @@ X       X X       X
 X        X        X
 X               Q X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
-    "KDiamonds": """XXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
+    "KDiamonds": f"""{Fore.RED}XXXXXXXXXXXXXXXXXXX
 X                 X
 X K               X
 X        X        X
@@ -663,7 +663,7 @@ X       X X       X
 X        X        X
 X               K X
 X                 X
-XXXXXXXXXXXXXXXXXXX""",
+XXXXXXXXXXXXXXXXXXX{Fore.WHITE}""",
     "AClubs": """XXXXXXXXXXXXXXXXXXX
 X                 X
 X A               X

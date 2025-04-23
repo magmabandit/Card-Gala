@@ -453,7 +453,7 @@ class Server:
                 num_players = game.get_num_players()
                 max_players = game.get_max_players()
                 for player in game.get_players():
-                    message = f"\r{Fore.GREEN}Waiting for players to join. {num_players}/{max_players} joined{Fore.RESET}"
+                    message = f"\n\r{Fore.GREEN}WAITING FOR PLAYERS TO JOIN... {num_players}/{max_players} JOINED{Fore.RESET}"
                     self.cast(
                         player, 
                         States.CHOOSE_GAME["server commands"]["printing over"]

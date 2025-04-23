@@ -91,7 +91,7 @@ class Client():
                         self.connection.sendall("ok".encode('utf-8'))
 
                     elif message[0:5] == States.CHOOSE_GAME["server commands"]["choose game"]:
-                        print(f"\n{Fore.WHITE}CHOOSE A GAME FROM THE LIST BELOW: ")
+                        print(f"\n{Fore.WHITE}CHOOSE A GAME FROM THE LIST BELOW OR CREATE A NEW ONE: ")
                         self.choose_game(message[5:])
 
                     elif message == States.CHOOSE_GAME["server commands"]["max_game_inst"]:
@@ -104,7 +104,7 @@ class Client():
                         self.connection.sendall("ok".encode('utf-8'))  
 
                     elif message == States.CHOOSE_GAME["server commands"]["waiting for players"]:
-                        print("WAITING FOR PLAYERS TO JOIN THE GAME...")
+                        print(f"\n{Fore.GREEN}WAITING FOR PLAYERS TO JOIN THE GAME...{Fore.WHITE}")
                         self.connection.sendall("ok".encode('utf-8')) 
 
                     elif message[0:5] == States.CHOOSE_GAME["server commands"]["printing"]:
@@ -140,7 +140,7 @@ class Client():
                         self.connection.sendall(move.encode('utf-8')) 
                     
                     elif message[0:5] == States.BLACKJACK["server commands"]["Player-choice2"]:
-                        game_check = input("PLAY AGAIN (Y/N)? ").lower()
+                        game_check = input(f"{Fore.BLUE}PLAY AGAIN (Y/N)? {Fore.WHITE}").lower()
                         self.connection.sendall(game_check.encode('utf-8')) 
 
                     elif message[0:5] == States.BLACKJACK["server commands"]["intial hand"]:
@@ -150,14 +150,14 @@ class Client():
                         # print(your_cards)
                         # print(hand_msgs)
                         # print("HERE????", art[your_cards[0]], art[your_cards[1]])
-                        print("\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-")
-                        print(f"\nYOUR HAND: {art[your_cards[0]]}, {art[your_cards[1]]}")
+                        print(f"\n{Style.DIM}-----------------------------------------------------------------------------{Style.NORMAL}")
+                        print(f"\nYOUR HAND: \n\n{art[your_cards[0]]}\n\n{art[your_cards[1]]}\n")
                         print(f"YOUR HAND VALUE: {hand_msgs[1]}\n")
                         # print(art[your_cards[0]], art[your_cards[1]])
-                        print(f"DEALER'S FIRST CARD: {art[hand_msgs[2]]}")
+                        print(f"DEALER'S FIRST CARD: \n\n{art[hand_msgs[2]]}\n")
                         # print(art[hand_msgs[2]])
-                        print(f"DEALER'S HAND VALUE: \b{hand_msgs[3]} 🂠")
-                        print("IT IS YOUR TURN!")
+                        print(f"DEALER'S HAND VALUE: \b{hand_msgs[3]}")
+                        print(f"\n{Fore.BLUE}IT IS YOUR TURN!{Fore.WHITE}")
 
                         self.connection.sendall("ok".encode('utf-8')) 
 
@@ -191,7 +191,7 @@ class Client():
                     ###########################################################
 
                     elif message == States.END["server commands"]["end"]:
-                        print("THANK YOU FOR PLAYING CARD-GALA, GOODBYE!")
+                        print(f"\n{Fore.BLUE}THANK YOU FOR PLAYING CARD-GALA, GOODBYE!{Fore.WHITE}")
                         self.connection.sendall("ok".encode('utf-8'))  
                         sock.close()
                         exit(0)
@@ -217,7 +217,7 @@ class Client():
         """
         Display and logic for new user account creation and returning user login
         """
-        print(f"""{Fore.WHITE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+
+        print(f"""{Fore.BLUE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+
                                                                                 
                                                                                 
                         {Fore.RED}__/\__                                                  
@@ -241,7 +241,7 @@ class Client():
                       XX      XX                                                
                       XX      XX                                                
                       XX      XX                                                
-{Fore.WHITE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+""")
+{Fore.BLUE}-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+{Fore.WHITE}""")
         entered_credentials = False
         response = ""
         # for a in art:
@@ -276,25 +276,25 @@ class Client():
             can_join = True
             # Client wants to know type of game, room name, num spots left, whos in the game
             # games are separated by '|' symbol, subcategories by commas
-            print("Choose from one of the following games or create a new game")
+            # print("Choose from one of the following games or create a new game")
             waiting_games = waiting_games_str.split("|")
-            print(f"Waiting games: {waiting_games}")
+            print(f"{Style.DIM}\nWAITING: {waiting_games}")
             num = 1
             for game in waiting_games:
                 if game != "":
                     print("------------------------------------------------")
                     game_info = game.split(":")
                     if self.DEBUG:
-                        print(f"game: {game}")
-                        print(f"game info: {game_info}", file=sys.stderr)
+                        print(f"GAME: {game}")
+                        print(f"GAME INFO: {game_info}", file=sys.stderr)
                     room_names.append(game_info[0])
-                    print(f"Game #{num}")
-                    print(f"room name: {game_info[0]}")
-                    print(f"game type: {game_info[1]}")
-                    print(f"players: {game_info[2]}")
-                    print(f"number of spots left: {game_info[3]}")
+                    print(f"GAME #{num}")
+                    print(f"ROOM NAME: {game_info[0]}")
+                    print(f"GAME TYPE: {game_info[1]}")
+                    print(f"PLAYERS: {game_info[2]}")
+                    print(f"NUMBER OF SPOTS LEFT: {game_info[3]}")
                     print("------------------------------------------------")
-                    print()
+                    print(f"{Style.NORMAL}")
                     num += 1
 
         # Client chooses one of the availible games or chooses to create a new game 
@@ -353,8 +353,8 @@ class Client():
                 self.connection.sendall(value.encode('utf-8'))
                 entered_money = True
             else:
-                print("You did not enter a valid amount of Money. Come "
-                + "back when you have actual money.")
+                print(f"\n{Fore.RED}YOU DID NOT ENTER A VALID AMOUNT OF MONEY...\nTRY AGAIN, OR COME "
+                + f"BACK WHEN YOU ACTUALLY HAVE MONEY!{Fore.WHITE}\n")
     
     def place_bet(self, money):
         print(f"\nYOU HAVE ${money}")
@@ -366,7 +366,7 @@ class Client():
                 self.connection.sendall(bet.encode('utf-8'))
                 placed_bet = True                
             else:
-                print(f"\n{Fore.RED}YOU DID NOT ENTER A VALID BET.\nYOUR BET MUST BE GREATER THAN $0 AND WITHIN YOUR AVAILABLE AMOUNT OF MONEY\n{Fore.WHITE}")
+                print(f"\n{Fore.RED}YOU DID NOT ENTER A VALID BET.\nYOUR BET MUST BE GREATER THAN $0 AND WITHIN YOUR AVAILABLE AMOUNT OF MONEY!\n{Fore.WHITE}")
 
     #####################
 

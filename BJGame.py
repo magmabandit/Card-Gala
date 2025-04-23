@@ -64,15 +64,23 @@ class BJGame(Game):
 
         while True:
             theHand = self.player.Show_hand().split()
-            string_hand = ""
-            for h in theHand[:-1]:
-                string_hand += art[h] + ", "
+            string_hand = "\n"
+            for h in range(len(theHand)):
+                if (h == len(theHand) - 1):
+                    string_hand += f"{Style.DIM}AND...{Style.NORMAL}\n\n" + art[theHand[h]] + "\n"
+                # elif (h == len(theHand) - 2):
+                #     string_hand += art[theHand[h]] + "\n\n"
+                else:
+                    string_hand += theHand[h] + "\n\n"
 
-            string_hand += art[theHand[-1]]
+            # if len(theHand) > 1:
+            #     string_hand += art[theHand[-1]] + "\n"
+
+            # string_hand += art[theHand[-1]] + "\n"
             
             # print("here", theHand)
             server.cast(player, state["server commands"]["printing"] + 
-                                "\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-\n\nYOUR HAND: " 
+                                f"\n{Style.DIM}-----------------------------------------------------------------------------{Style.NORMAL}\n\nYOUR HAND:\n"
                                 + string_hand)
             # print(art[theHand[0]], art[theHand[1]])
             server.cast(player, state["server commands"]["printing"] + 
@@ -101,15 +109,35 @@ class BJGame(Game):
     def dealer_turn(self, server, state, player):
         """Dealer plays according to the rules (hit until 17+)."""
         server.cast(player, state["server commands"]["printing"] + 
-                            "\nDealer's Turn...")
-        server.cast(player, state["server commands"]["printing"] + 
-                            self.dealer.Show_hand())
+                            f"\n{Style.DIM}-----------------------------------------------------------------------------{Style.NORMAL}\n\n" +
+                            "DEALER'S TURN...")
+
+        # theHand1 = self.dealer.Show_hand().split()
+        # string_hand1 = "\n"
+        # for h in range(len(theHand1)):
+        #     if (h == len(theHand1) - 1):
+        #         string_hand1 += f"{Style.DIM}AND...{Style.NORMAL}\n\n" + art[theHand1[h]] + "\n"
+        #     # elif (h == len(theHand) - 2):
+        #     #     string_hand += art[theHand[h]] + "\n\n"
+        #     else:
+        #         string_hand1 += theHand1[h] + "\n\n"
+
+        # server.cast(player, state["server commands"]["printing"] + string_hand1)
 
         self.dealer.Play_turn(self.deck)
 
-        server.cast(player, state["server commands"]["printing"] + 
-                            self.dealer.Show_hand())
-        server.cast(player, state["server commands"]["printing"] + 
+        theHand = self.dealer.Show_hand().split()
+        string_hand = "\n"
+        for h in range(len(theHand)):
+            if (h == len(theHand) - 1):
+                string_hand += f"{Style.DIM}AND...{Style.NORMAL}\n\n" + art[theHand[h]] + "\n"
+            # elif (h == len(theHand) - 2):
+            #     string_hand += art[theHand[h]] + "\n\n"
+            else:
+                string_hand += theHand[h] + "\n\n"
+
+        server.cast(player, state["server commands"]["printing"] + string_hand)
+        server.cast(player, state["server commands"]["printing"] + "DEALER'S HAND VALUE: " +
                             str(self.dealer.Get_hand().get_value()))
     
     def determine_winner(self, bet, server, state, player):
@@ -121,23 +149,23 @@ class BJGame(Game):
 
         if dealer_value > 21 or player_value > dealer_value:
             server.cast(player, state["server commands"]["printing"] + 
-                                "You win!")
+                                f"\n{Fore.BLUE}YOU WIN!{Fore.WHITE}")
             self.player.add_money(bet * 1.5)
 
         elif player_value == dealer_value:
             server.cast(player, state["server commands"]["printing"] + 
-                                "It's a tie! You get your money back.")
+                                f"\n{Fore.BLUE}IT'S A TIE! YOU GET YOUR MONEY BACK.{Fore.WHITE}")
             self.player.add_money(bet)  
         else:
             server.cast(player, state["server commands"]["printing"] + 
-                                "Dealer wins!")
+                                f"\n{Fore.BLUE}DEALER WINS!{Fore.WHITE}")
 
     def play_round(self, server, state, player):
         """Runs a full round of Blackjack."""
 
         if self.player.Get_money() <= 0:
             server.cast(player, state["server commands"]["printing"] + 
-                                "You're out of money! Game over :(.")
+                                f"\n{Fore.RED}YOU'RE OUT OF MONEY! GAME OVER :({Fore.WHITE}")
             return False
         
         self.deck.shuffle()
@@ -149,7 +177,7 @@ class BJGame(Game):
             self.determine_winner(bet, server, state, player)
 
         server.cast(player, state["server commands"]["printing"] + 
-                            "Ammount of money left: " + 
+                            f"\n{Fore.BLUE}AMOUNT OF MONEY LEFT: {Fore.WHITE}" + 
                             str(self.player.Get_money()))
         Game_check = server.call(player, 
                                  state["server commands"]["Player-choice2"])
@@ -170,7 +198,7 @@ class BJGame(Game):
         pl1 = players[0]
 
         # send welcome message(cast printing)
-        message = f"{Fore.GREEN}Waiting for players to join. {self.get_num_players()}/{self.get_max_players()} joined{Fore.RESET}"
+        message = f"\n\r{Fore.GREEN}WAITING FOR PLAYERS TO JOIN... {self.get_num_players()}/{self.get_max_players()} JOINED{Fore.RESET}"
         server.cast(pl1, state["server commands"]["printing"] +
                     message)
         welcome = f"""{Fore.BLUE}\n-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-
@@ -191,4 +219,5 @@ class BJGame(Game):
 
         self.play_round(server, state, pl1)
         server.cast(pl1, state["server commands"]["printing"] + 
-                         "Thanks for playing Blackjack! Goodbye!!")
+                         f"\n{Fore.BLUE}THANK YOU FOR PLAYING BLACKJACK, GOODBYE!\n\n" +
+                         f"-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-+H+-{Fore.WHITE}")

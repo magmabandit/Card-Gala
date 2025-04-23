@@ -264,10 +264,10 @@ class BJ2Player(Game):
             self.determine_winner(self.bet2, server, state, pl2, False)
 
         server.cast(pl1, state["server commands"]["printing"] 
-                        + "Amount of money left: " 
+                        + "AMOUNT OF MONEY LEFT: " 
                             + str(player1.Get_money()))
         server.cast(pl2, state["server commands"]["printing"] 
-                        + "Amount of money left: " 
+                        + "AMOUNT OF MONEY LEFT: " 
                             + str(player2.Get_money()))
 
         Game_check1 = server.call(pl1, 
