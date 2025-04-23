@@ -214,7 +214,7 @@ class Server:
         if data != b'': # Recieved response from client
             response = data.decode('utf-8')
             if response != "ok":
-                connection.sendall(States.ERROR["error"])
+                connection.sendall(States.ERROR["server commands"]["error"])
                 self.remove_player(player)
         else: # Client has disconnected
             self.logger.debug("Client disconnected")
@@ -257,7 +257,7 @@ class Server:
         #TODO: for debugging - remove this
         self.logger.debug(f"Login type: {login_type}")
 
-        self.cast(new_player, States.ERROR["error"])
+        self.cast(new_player, States.ERROR["server commands"]["error"])
         self.remove_player(new_player)
         return True
 
@@ -416,7 +416,7 @@ class Server:
         #TODO: for debugging - remove this
         self.logger.debug(f"Choose game type: {choose_game_type}")
 
-        self.cast(new_player, States.ERROR["error"])
+        self.cast(new_player, States.ERROR["server commands"]["error"])
         self.remove_player(new_player)
         return True
     
@@ -437,7 +437,7 @@ class Server:
             else:
                 #TODO: send message to other players - a player disconnected...
                 for player in game.get_players():
-                    message = "\n{Fore.RED}ONE OF THE OTHER PLAYERS DISCONNECTED. GAME OVER.{Fore.RESET}"
+                    message = f"\n{Fore.RED}ONE OF THE OTHER PLAYERS DISCONNECTED. GAME OVER.{Fore.RESET}"
                     self.cast(player, States.CHOOSE_GAME["server commands"]["printing"] + message)
 
         if player in self.idle_players:

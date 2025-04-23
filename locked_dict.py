@@ -66,6 +66,13 @@ class LockedDict():
         """
         with self.lock:
             self.dict[key] -= 1
+
+    def __iter__(self):
+        """
+        Returns: an iterator over a **shallow copy** of the list to ensure thread safety.
+        """
+        with self.lock:
+            return iter(self.dict.copy())
             
     ### waiting_games specific functions ###
     ### These functions should only be called by waiting_game_rooms ###
