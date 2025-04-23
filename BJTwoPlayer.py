@@ -203,15 +203,18 @@ class BJ2Player(Game):
                             + "Dealer wins!")
 
     def place_player_bet(self, server, pl, state, player):
-        bet = server.call(pl, state["server commands"]["place bet"] 
-                              + str(player.Get_money()))
-        if bet == None:
+        try:
+            bet = server.call(pl, state["server commands"]["place bet"] 
+                                + str(player.Get_money()))
+            if bet == None:
+                exit(0)
+            if player == self.players_logic[0]:
+                self.bet1 = int(bet)
+            else:
+                self.bet2 = int(bet)
+            player.Make_bet(int(bet))
+        except:
             exit(0)
-        if player == self.players_logic[0]:
-            self.bet1 = int(bet)
-        else:
-            self.bet2 = int(bet)
-        player.Make_bet(int(bet))
 
     def play_round(self, server, state, pl1, pl2):
         """Runs a full round of Blackjack.

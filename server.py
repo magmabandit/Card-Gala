@@ -214,7 +214,7 @@ class Server:
         if data != b'': # Recieved response from client
             response = data.decode('utf-8')
             if response != "ok":
-                connection.sendall(States.ERROR["server commands"]["error"])
+                connection.sendall(States.ERROR["server commands"]["error"].encode('utf-8'))
                 self.remove_player(player)
         else: # Client has disconnected
             self.logger.debug("Client disconnected")
