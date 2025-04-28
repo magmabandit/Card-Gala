@@ -1,4 +1,3 @@
-### ABDI do this
 # CrazyEight.py
 # A two-player implementation of the Crazy Eight card game. 
 # Players take turns playing valid cards that match either suit or

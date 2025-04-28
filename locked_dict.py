@@ -1,3 +1,6 @@
+# locked_dict.py
+# implementation of a thread-safe dictionary.
+
 import threading
 
 class LockedDict():

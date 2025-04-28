@@ -1,3 +1,6 @@
+# player.py
+# stores and gives access to client-related data
+
 import socket
 
 class Player():

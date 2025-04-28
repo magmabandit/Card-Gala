@@ -1,4 +1,3 @@
-### ABDI do this
 # CrazyEightHand.py
 # includes methods to add cards, remove cards, get playable cards
 # and draw cards from the deck
